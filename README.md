@@ -1,1 +1,1 @@
-# Ransomware_LLM
+# Ransomware elaborado a partir de LLM
