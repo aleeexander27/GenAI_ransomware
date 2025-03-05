@@ -8,6 +8,9 @@ import platform
 import uuid
 import ctypes
 import signal
+import time
+import threading
+import random
 
 # Direcciones MAC de fabricantes de virtualización comunes
 MAC_PREFIXES = {
@@ -19,34 +22,20 @@ MAC_PREFIXES = {
 }
 
 def get_mac_address():
-    """Obtiene la dirección MAC de la interfaz de red principal."""
     mac = ':'.join(re.findall('..', '%012x' % uuid.getnode()))
     return mac.upper()
 
 def check_hypervisor_mac(mac):
-    """Verifica si la dirección MAC pertenece a un hipervisor."""
     for hypervisor, prefixes in MAC_PREFIXES.items():
         if any(mac.startswith(prefix) for prefix in prefixes):
             return hypervisor
     return None
 
 def check_system_requirements():
-    # Obtener información del procesador
-    cpu_cores = psutil.cpu_count(logical=False)  # Núcleos físicos
-    
-    # Obtener información de la memoria RAM
-    ram = psutil.virtual_memory().total / (1024 ** 3)  # Convertir a GB
-    
-    # Obtener información del almacenamiento
-    disk = psutil.disk_usage('/').total / (1024 ** 3)  # Convertir a GB
-    
-    # Mostrar información del sistema
-    print(f"Procesador: {platform.processor()} - Núcleos físicos: {cpu_cores}")
-    print(f"Memoria RAM: {ram:.2f} GB")
-    print(f"Almacenamiento total: {disk:.2f} GB")
-    
-    # Verificar los requisitos mínimos
-    
+    cpu_cores = psutil.cpu_count(logical=False)  #
+    ram = psutil.virtual_memory().total / (1024 ** 3)  
+    disk = psutil.disk_usage('/').total / (1024 ** 3)  
+
     if disk < 64 or ram < 4 or cpu_cores < 2:
         sys.exit(1)
     print("El sistema cumple con los requisitos mínimos.")
@@ -80,8 +69,6 @@ def detect_debuggers_linux():
                 sys.exit(1)
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             continue
-    
-    # Verificar ptrace en /proc/self/status
     try:
         with open("/proc/self/status", "r") as status_file:
             for line in status_file:
@@ -92,9 +79,13 @@ def detect_debuggers_linux():
     except FileNotFoundError:
         pass
 
+def evasive_sleep(seconds):
+    start = time.perf_counter()
+    while time.perf_counter() - start < seconds:
+        _ = sum(random.randint(1, 100) for _ in range(10000))  # Cálculo inútil
 
-if __name__ == "__main__":
-
+def check_virtualization_and_debbuging():
+    evasive_sleep(10)
     if sys.platform.startswith("win"):
         if is_debugger_present_windows():
             print("[!] Depurador detectado mediante IsDebuggerPresent.")
@@ -109,8 +100,11 @@ if __name__ == "__main__":
 
     if hypervisor:
         print(f"El sistema está ejecutándose en un hipervisor: {hypervisor}")
-        sys.exit(1);
+        sys.exit(1)
     else:
         print("El sistema parece estar ejecutándose en hardware físico.")
     
     check_system_requirements()
+    
+    if __name__ == "__main__":
+       check_virtualization_and_debbuging()

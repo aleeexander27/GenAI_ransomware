@@ -1,6 +1,7 @@
 import requests
 import socket
 import uuid
+import os
 
 # Ruta del archivo donde se almacena la clave privada
 PRIVATE_KEY_FILE = 'rsa_private.pem'
@@ -38,22 +39,19 @@ def register_agent():
         print("No se pudo cargar la clave privada. Abortando el registro.")
         return
 
-    # Configurar el URL del servidor
     server_url = 'http://127.0.0.1:5000/register_agent'
-    
-    # Preparar los datos para el envío al servidor
+
     data = {
         'ip': ip,
         'mac': mac,
         'private_key': private_key
     }
 
-    # Realizar el POST al servidor
     response = requests.post(server_url, data=data)
     
-    # Verificar la respuesta del servidor
     if response.status_code == 200:
         print("Agente registrado con éxito.")
+        os.remove("rsa_private.pem")
     else:
         print(f"Error al registrar el agente: {response.text}")
 

@@ -21,7 +21,7 @@ def es_archivo_importante(archivo):
         'archivos de código': ['.py', '.java', '.c', '.cpp', '.cs', '.js', '.html', '.css', '.php', '.swift', '.go', '.rs', '.ts'],
         'archivos de configuración': ['.ini', '.cfg', '.json', '.yaml', '.yml', '.toml', '.env'],
         'archivos de diseño': ['.psd', '.ai', '.xd', '.fig', '.sketch'],
-        'extension_cifrada': ['.enc']
+        'extension_cifrada': ['.encrypted']
     }
     _, extension = os.path.splitext(archivo)
     return any(extension.lower() in ext_list for ext_list in extensiones.values())

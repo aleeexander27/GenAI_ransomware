@@ -16,8 +16,7 @@ def generate_aes_key():
     aes_key = get_random_bytes(32)  # 256 bits = 32 bytes
     with open("aes_key.bin", "wb") as aes_file:
         aes_file.write(aes_key)
-
-
+        
 #cuando esté todo después lo llamamos en el main...
 if __name__ == "__main__":
     generate_rsa_key()
