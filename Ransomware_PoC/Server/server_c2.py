@@ -1,65 +1,59 @@
-from flask import Flask, render_template, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, request, jsonify, send_file
+from io import BytesIO
 
-# Inicialización de Flask y SQLAlchemy
+# Inicialización de Flask
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///agents.db'  # Archivo SQLite para almacenar los agentes
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
 
-# Definir el modelo de base de datos para los agentes
-class Agent(db.Model):
-    id = db.Column(db.Integer, primary_key=True)  # Número de agente (ID único)
-    ip = db.Column(db.String(15), unique=True, nullable=False)  # IP del agente
-    mac = db.Column(db.String(17), nullable=False)  # MAC del agente
-    private_key = db.Column(db.Text, nullable=False)  # Clave privada del agente
-
-    def __repr__(self):
-        return f"<Agent {self.ip}>"
-
-# Crear la base de datos (si no existe)
-with app.app_context():
-    db.create_all()
+# Lista para almacenar los agentes (sin base de datos)
+agents = []
 
 # Ruta principal que muestra la tabla con los agentes registrados
 @app.route('/')
 def index():
-    agents = Agent.query.all()  # Obtener todos los agentes de la base de datos
     return render_template('index.html', agents=agents)
 
-# Ruta para recibir los datos de los agentes (IP, MAC, y clave privada)
+# Ruta para recibir los datos de los agentes (IP, MAC, y clave privada como archivo)
 @app.route('/register_agent', methods=['POST'])
 def register_agent():
-    data = request.form
-    ip = data.get('ip')
-    mac = data.get('mac')
-    private_key = data.get('private_key')
+    ip = request.form.get('ip')
+    mac = request.form.get('mac')
+    private_key_file = request.files.get('private_key')  # Obtener el archivo de la clave privada
 
-    if not ip or not mac or not private_key:
+    if not ip or not mac or not private_key_file:
         return jsonify({'error': 'Faltan IP, MAC o clave privada'}), 400
 
-    # Crear un nuevo agente y guardarlo en la base de datos
-    new_agent = Agent(ip=ip, mac=mac, private_key=private_key)
-    db.session.add(new_agent)
-    db.session.commit()
+    # Leer el contenido binario del archivo .PEM
+    private_key_content = private_key_file.read()
+
+    # Guardar el contenido binario de la clave privada directamente en la "base de datos" (lista)
+    agent = {
+        'ip': ip,
+        'mac': mac,
+        'private_key': private_key_content  # Almacenamos en formato binario
+    }
+
+    # Almacenamos el agente en la lista
+    agents.append(agent)
 
     return jsonify({'message': 'Agente registrado con éxito'}), 200
 
-# Ruta para obtener la información de un agente por su IP
-@app.route('/get_agent_info/<agent_ip>', methods=['GET'])
-def get_agent_info(agent_ip):
-    # Buscar el agente en la base de datos
-    agent = Agent.query.filter_by(ip=agent_ip).first()
-    if not agent:
+# Ruta para ver el archivo .PEM del agente
+@app.route('/view_private_key/<int:agent_id>', methods=['GET'])
+def view_private_key(agent_id):
+    if agent_id < 0 or agent_id >= len(agents):
         return jsonify({'error': 'Agente no encontrado'}), 404
+    
+    # Obtener el agente y su clave privada
+    agent = agents[agent_id]
+    private_key_content = agent['private_key']
 
-    return jsonify({
-        'ip': agent.ip,
-        'mac': agent.mac,
-        'private_key': agent.private_key,
-        'agent_id': agent.id
-    })
+    # Crear un flujo de BytesIO con el contenido de la clave privada
+    private_key_io = BytesIO(private_key_content)
+
+    # Enviar el archivo como respuesta
+    return send_file(private_key_io, as_attachment=True, download_name="rsa_private.pem", mimetype='application/x-pem-file')
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)
+
 

