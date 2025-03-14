@@ -1,1 +1,4 @@
 __pycache__/
+agent_id.json 
+rsa_public.pem
+rsa_private.pem
