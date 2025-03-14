@@ -2,7 +2,7 @@ import os
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from Crypto.Util.Padding import pad
-from find_files import walk_directory, find_files
+from find_files import  find_files
 import os
 import gen_keys
 import agent_c2

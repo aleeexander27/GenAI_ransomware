@@ -5,19 +5,21 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <title>Agentes Registrados</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <title>Servidor C2</title>
 </head>
 
 <body>
     <div class="container mt-5">
-        <h1>Agentes Registrados</h1>
+        <h1>Servidor de Comando y Control</h1>
         <table class="table table-bordered">
             <thead>
                 <tr>
                     <th>ID</th>
                     <th>IP</th>
                     <th>MAC</th>
-                    <th>Ver Clave</th>
+                    <th>S.O</th>
+                    <th>Clave de descifrado</th>
                 </tr>
             </thead>
             <tbody>
@@ -26,8 +28,8 @@
                     <td>{{ loop.index }}</td>
                     <td>{{ agent.ip }}</td>
                     <td>{{ agent.mac }}</td>
-                    <td><a href="{{ url_for('view_private_key', agent_id=loop.index0) }}" target="_blank">Ver clave</a>
-                    </td>
+                    <td>{{ agent.so }}</td>
+                    <td><a href="{{ url_for('view_private_key', agent_id=loop.index0) }}" target="_blank">Descargar clave</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -36,3 +38,4 @@
 </body>
 
 </html>
+

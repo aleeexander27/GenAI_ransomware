@@ -1,0 +1,51 @@
+body {
+    background-color: #121212;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.container {
+    max-width: 900px;
+    background-color: #1e1e1e;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+
+.table {
+    color: white;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.table thead {
+    background-color: #8b0000;
+    color: white;
+    text-transform: uppercase;
+}
+
+.table th, .table td {
+    border: 1px solid white;
+    text-align: center;
+    padding: 10px;
+}
+
+.table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+a {
+    color: #ff4d4d;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
