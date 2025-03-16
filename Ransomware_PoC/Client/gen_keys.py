@@ -2,7 +2,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Random import get_random_bytes
 
 def generate_rsa_key():
-    rsa_key = RSA.generate(2048)
+    rsa_key = RSA.generate(2048)  # 2048 bits = 256 bytes
     private_key = rsa_key.export_key()
     public_key = rsa_key.publickey().export_key()
     

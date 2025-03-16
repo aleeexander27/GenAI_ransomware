@@ -2,3 +2,5 @@ __pycache__/
 agent_id.json 
 rsa_public.pem
 rsa_private.pem
+aes_key.bin
+aes_key_encrypted.bin
