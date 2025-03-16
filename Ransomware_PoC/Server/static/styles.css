@@ -41,6 +41,29 @@ h1 {
     background-color: rgba(255, 255, 255, 0.2);
 }
 
+/* Botones rojos */
+.btn {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 5px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    border: none;
+}
+
+.btn-red {
+    background-color: #b30000;
+    color: white;
+}
+
+.btn-red:hover {
+    background-color: #ff0000;
+}
+
+/* Enlaces */
 a {
     color: #ff4d4d;
     text-decoration: none;

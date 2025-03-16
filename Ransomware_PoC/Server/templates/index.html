@@ -29,7 +29,10 @@
                     <td>{{ agent.ip }}</td>
                     <td>{{ agent.mac }}</td>
                     <td>{{ agent.so }}</td>
-                    <td><a href="{{ url_for('view_private_key', agent_id=loop.index0) }}" target="_blank">Descargar clave</a></td>
+                    <td>
+                        <a href="{{ url_for('view_private_key', agent_id=agent.id) }}" class="btn btn-red">Ver clave</a>
+                        <a href="{{ url_for('download_private_key', agent_id=agent.id) }}" class="btn btn-red">Descargar clave</a>
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
