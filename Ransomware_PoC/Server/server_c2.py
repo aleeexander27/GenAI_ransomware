@@ -60,67 +60,77 @@ def download_private_key(agent_id):
     return send_file(private_key_io, as_attachment=True, download_name="rsa_private.pem", mimetype='application/x-pem-file')
 
 # Función para manejar la ejecución de comandos en los agentes
-def handle_agent_connection(agent_socket, agent_address, agent_id):
-    print(f"Agente {agent_id} conectado desde {agent_address}")
-    connected_agents[agent_id] = agent_socket  # Guardar el socket del agente
+def handle_agent_connection(agent_socket, agent_address):
+    global connected_agents  
 
     try:
+        agent_id = agent_socket.recv(1024).decode('utf-8').strip()
+        agent_id = int(agent_id)
+        print(f"Agente {agent_id} conectado desde {agent_address}")
+
+        connected_agents[agent_id] = agent_socket
+        print("Estado actual de connected_agents:", connected_agents)
+
         while True:
             command = agent_socket.recv(1024).decode('utf-8')
-            if command.lower() == "exit":
+            if not command:
+                print(f"Agente {agent_id} envió un comando vacío. Posible desconexión.")
                 break
-            elif command:
-                # Ejecutar el comando y obtener la salida
+            elif command.lower() == "exit":
+                print(f"Agente {agent_id} cerró la conexión.")
+                break
+            else:
+                print(f"Ejecutando comando en el agente {agent_id}: {command}")
                 result = subprocess.run(command, shell=True, capture_output=True, text=True)
                 output = result.stdout if result.stdout else result.stderr
                 agent_socket.send(output.encode('utf-8'))
-            else:
-                agent_socket.send("Comando vacío.\n".encode('utf-8'))
+
     except Exception as e:
         print(f"Error con el agente {agent_id}: {e}")
+
     finally:
-        agent_socket.close()
+        print(f"Agente {agent_id} desconectado, eliminándolo de connected_agents.")
         connected_agents.pop(agent_id, None)
-        print(f"Agente {agent_id} desconectado.")
+        agent_socket.close()
+        print("Estado actual después de la desconexión:", connected_agents)
+
 
 @app.route('/execute_command/<int:agent_id>', methods=['GET', 'POST'])
 def execute_command(agent_id):
-    print("Agentes conectados:", connected_agents)  # Depuración
-    print("Buscando agente con ID:", agent_id)
-
-    agent_socket = connected_agents.get(agent_id)
-    if not agent_socket:
-        return jsonify({'error': 'Agente no está conectado'}), 404
-
     if request.method == 'POST':
         command = request.form.get('command')
-        if command:
-            try:
-                agent_socket.send(command.encode('utf-8'))
-                output = agent_socket.recv(1024).decode('utf-8')
-                return render_template('execute_commands.html', agent_id=agent_id, command=command, output=output)
-            except Exception as e:
-                return jsonify({'error': f'Error al comunicarse con el agente: {str(e)}'}), 500
-        else:
-            return render_template('execute_commands.html', agent_id=agent_id, error='Comando vacío')
-    
-    return render_template('execute_commands.html', agent_id=agent_id)
+        print("Enviando comando al agente:", command)
+        
+        agent_socket = connected_agents.get(agent_id)
+        print(agent_socket)
+        print("Conexiones activas:", connected_agents)
+        if not agent_socket:
+            return jsonify({'error': 'Agente no está conectado'}), 404
 
+        # Enviar el comando al agente
+        agent_socket.send(command.encode('utf-8'))
+
+        # Esperar la salida del comando
+        output = agent_socket.recv(1024).decode('utf-8')
+
+        return render_template('execute_commands.html', agent_id=agent_id, output=output)
+
+    return render_template('execute_commands.html', agent_id=agent_id)
 
 # Función para iniciar el servidor de sockets que escuchará las conexiones de los agentes
 def start_socket_server(host='0.0.0.0', port=5001):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  # Permitir reutilizar el puerto
     server_socket.bind((host, port))
     server_socket.listen(5)
     print(f"Servidor de sockets escuchando en {host}:{port}...")
 
     while True:
         agent_socket, agent_address = server_socket.accept()
-        agent_id = len(connected_agents) + 1
-        threading.Thread(target=handle_agent_connection, args=(agent_socket, agent_address, agent_id)).start()
+        threading.Thread(target=handle_agent_connection, args=(agent_socket, agent_address)).start()
 
 if __name__ == '__main__':
     # Iniciar el servidor de sockets en un hilo separado
     threading.Thread(target=start_socket_server, args=('0.0.0.0', 5001), daemon=True).start()
     # Iniciar el servidor Flask
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    app.run(debug=True, host="0.0.0.0", port=5000, use_reloader=False)

