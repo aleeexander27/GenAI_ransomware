@@ -72,3 +72,17 @@ a {
 a:hover {
     text-decoration: underline;
 }
+
+.output-box {
+    background-color: #333; /* Gris oscuro casi negro */
+    border: 1px solid #222; /* Borde más oscuro */
+    padding: 20px;
+    margin-top: 20px;
+    width: 80%; /* Ajusta el ancho del box */
+    margin-left: auto;
+    margin-right: auto;
+    border-radius: 5px;
+    white-space: pre-wrap; /* Para preservar saltos de línea */
+    word-wrap: break-word; /* Para evitar desbordes en el texto */
+    color: #fff; /* Texto en blanco para contraste */
+}

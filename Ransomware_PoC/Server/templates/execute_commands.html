@@ -14,31 +14,35 @@
         .container {
             text-align: center; /* Centra el texto dentro del contenedor */
         }
+        h3 {
+            text-align: left; /* Alinea el texto a la izquierda */
+            margin-left: 10%; /* Da un poco de espacio desde la izquierda */
+        }
     </style>
     <title>Ejecutar Comando en Agente</title>
 </head>
 
 <body>
     <div class="container">
-        <h1 class="text-center">Ejecutar Comandos en Agente {{ agent_id }}</h1>
+        <h1>Ejecutar Comandos en Agente {{ agent_id }}</h1><br></br>
         {% if error %}
         <div class="error">
             <p>{{ error }}</p>
         </div>
         {% endif %}
-        
         <form method="POST" action="{{ url_for('execute_command', agent_id=agent_id) }}">
             <div class="form-group">
                 <input type="text" name="command" placeholder="Escribe el comando" class="form-control" style="font-size: 18px;" required>
             </div><br></br>
             <div class="form-group">
-                <button type="submit" class="btn btn-red">Ejecutar comando</button>
+                <button type="submit" class="btn btn-red">Ejecutar</button>
             </div>
-        </form>
-
+        </form><br></br>
         {% if output %}
-        <h3>Resultado del Comando:</h3>
-        <pre>{{ output }}</pre>
+        <h3>Resultado:</h3>
+        <div class="output-box">
+            <pre>{{ output }}</pre>
+        </div>
         {% endif %}
     </div>
 </body>
