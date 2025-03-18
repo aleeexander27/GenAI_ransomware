@@ -118,12 +118,3 @@ def connect_to_server():
         agent_socket.close()
     except Exception as e:
         print(f"Error al conectar al servidor: {e}")
-
-
-# Función principal del cliente
-def main():
-   
-        get_private_key()
-
-if __name__ == "__main__":
-    main()

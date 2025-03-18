@@ -9,6 +9,11 @@ h1 {
     margin-bottom: 20px;
 }
 
+h3 {
+    text-align: left; 
+    margin-left: 10%; 
+}
+
 .container {
     max-width: 900px;
     background-color: #1e1e1e;
@@ -79,10 +84,13 @@ a:hover {
     padding: 20px;
     margin-top: 20px;
     width: 80%; /* Ajusta el ancho del box */
+    max-width: 100%; /* Evita que se desborde */
     margin-left: auto;
     margin-right: auto;
     border-radius: 5px;
-    white-space: pre-wrap; /* Para preservar saltos de línea */
-    word-wrap: break-word; /* Para evitar desbordes en el texto */
+    white-space: pre-wrap; /* Mantiene los saltos de línea */
+    word-wrap: break-word; /* Evita desbordes de palabras largas */
+    overflow: auto; /* Agrega scroll si el contenido excede el tamaño */
     color: #fff; /* Texto en blanco para contraste */
 }
+
