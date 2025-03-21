@@ -1,12 +1,16 @@
 from flask import Flask, render_template, request, jsonify, send_file, Response
 from io import BytesIO
 import socket, threading, subprocess
+import queue
+import time 
 
 app = Flask(__name__)
 
 agents = []
 next_id = 1 
 connected_agents = {}  # Diccionario para almacenar las conexiones de agentes activas
+result_queue = queue.Queue()
+command_queue = queue.Queue()
 
 @app.route('/') # Ruta principal 
 def index():
@@ -48,8 +52,9 @@ def download_private_key(agent_id):
     private_key_io = BytesIO(agent['private_key'].encode('utf-8'))
     return send_file(private_key_io, as_attachment=True, download_name="rsa_private.pem", mimetype='application/x-pem-file')
 
-def handle_agent_connection(agent_socket, agent_address): # Función para manejar la ejecución de comandos en los agentes
-    global connected_agents  
+def handle_agent_connection(agent_socket, agent_address):
+    """Maneja la conexión con el agente y espera comandos desde el servidor."""
+    global connected_agents
     try:
         agent_id = agent_socket.recv(4096).decode('utf-8').strip()
         agent_id = int(agent_id)
@@ -59,18 +64,20 @@ def handle_agent_connection(agent_socket, agent_address): # Función para maneja
         print("Estado actual de connected_agents:", connected_agents)
 
         while True:
-            command = agent_socket.recv(4096).decode('utf-8')
-            if not command:
-                print(f"Agente {agent_id} envió un comando vacío. Posible desconexión.")
-                break
-            elif command.lower() == "exit":
-                print(f"Agente {agent_id} cerró la conexión.")
-                break
-            else:
-                print(f"Ejecutando comando en el agente {agent_id}: {command}")
-                #result = subprocess.run(command, shell=True, capture_output=True, text=True)
-                #output = result.stdout if result.stdout else result.stderr
-                #agent_socket.send(output.encode('utf-8'))
+            # Verificar si hay un comando en la cola para enviar al agente
+            if not command_queue.empty():
+                command = command_queue.get()
+                print(f"Enviando comando al agente {agent_id}: {command}")
+                agent_socket.send(command.encode('utf-8'))
+                # Esperar la respuesta del agente
+                output = agent_socket.recv(4096).decode('utf-8')
+                print(f"Respuesta del agente {agent_id}: {output}")
+                # Si no hay salida, asignamos un mensaje por defecto
+                if not output:
+                    output = f"Comando {command} ejecutado con éxito (sin salida)."
+                # Poner la respuesta en la cola de resultados
+                result_queue.put((agent_id, output))
+
     except Exception as e:
         print(f"Error con el agente {agent_id}: {e}")
     finally:
@@ -81,22 +88,35 @@ def handle_agent_connection(agent_socket, agent_address): # Función para maneja
 
 @app.route('/execute_command/<int:agent_id>', methods=['GET', 'POST'])
 def execute_command(agent_id):
+    """Enviar comandos desde el servidor al agente y recibir la respuesta."""
+    output = None
     if request.method == 'POST':
         command = request.form.get('command')
-        print("Enviando comando al agente:", command)
+        print(f"Recibiendo comando para el agente {agent_id}: {command}")
         agent_socket = connected_agents.get(agent_id)
-        print(agent_socket)
-        print("Conexiones activas:", connected_agents)
         if not agent_socket:
             return jsonify({'error': 'Agente no está conectado'}), 404
-        agent_socket.send(command.encode('utf-8')) # Función para manejar la ejecución de comandos en los agentes
-        output = agent_socket.recv(4096).decode('utf-8') # Esperar la salida del comando
-        return render_template('execute_commands.html', agent_id=agent_id, output=output)
-    return render_template('execute_commands.html', agent_id=agent_id)
+        # Poner el comando en la cola para que el servidor de sockets lo procese
+        command_queue.put(command)
+        # Esperar hasta que el servidor de sockets ponga el resultado en la cola con un timeout
+        timeout = 4  # tiempo de espera en segundos
+        start_time = time.time()
+        while result_queue.empty() and (time.time() - start_time) < timeout:
+            pass  # Esperar hasta que haya un resultado o se alcance el timeout
+        # Recuperar la salida del agente de la cola
+        if result_queue.empty():
+            output = f"Error: El agente {agent_id} no respondió a tiempo."
+        else:
+            # Recuperar la salida del agente de la cola
+            result_agent_id, output = result_queue.get()
+            # Asegurarse de que el resultado corresponde al agente correcto
+            if result_agent_id != agent_id:
+                output = f"Error: El resultado no pertenece al agente {agent_id}."
+
+    return render_template('execute_commands.html', agent_id=agent_id, output=output)
 
 def start_socket_server(host='0.0.0.0', port=5001): # Función para iniciar el servidor de sockets que escuchará las conexiones de los agentes
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)  
     server_socket.bind((host, port))
     server_socket.listen(5)
     print(f"Servidor de sockets escuchando en {host}:{port}...")

