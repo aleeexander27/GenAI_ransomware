@@ -36,7 +36,7 @@ def decrypt_file(file, aes_key_decrypted):
         f.write(decrypted_data)  # Sobrescribimos el archivo con los datos descifrados
     file_decrypted = file[:-10]  # Elimina la extensión '.encrypted'
     os.rename(file, file_decrypted) # Renombramos el archivo, eliminando la extensión '.encrypted'
-    print(f"Archivo descifrado y renombrado: {file} -> {file_decrypted}")
+    print(f"Archivo descifrado: {file} -> {file_decrypted}")
 
 def decrypt_files():
     agent.get_private_key()

