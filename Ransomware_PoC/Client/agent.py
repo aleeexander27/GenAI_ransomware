@@ -32,7 +32,6 @@ def get_agent_id(): # Obtener el agent_id desde el archivo
         return None
 
 def register_agent():
-
     ip = get_ip_address()
     mac = antianalysis.get_mac_address()
     so = platform.system() + platform.version()

