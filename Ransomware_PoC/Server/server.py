@@ -1,7 +1,6 @@
 from flask import Flask, render_template, request, jsonify, send_file, Response
 from io import BytesIO
 import socket, threading, subprocess
-import queue
 import time 
 
 app = Flask(__name__)
@@ -9,8 +8,6 @@ app = Flask(__name__)
 agents = []
 next_id = 1 
 connected_agents = {}  # Diccionario para almacenar las conexiones de agentes activas
-result_queue = queue.Queue()
-command_queue = queue.Queue()
 
 @app.route('/') # Ruta principal 
 def index():
@@ -52,77 +49,55 @@ def download_private_key(agent_id):
     private_key_io = BytesIO(agent['private_key'].encode('utf-8'))
     return send_file(private_key_io, as_attachment=True, download_name="rsa_private.pem", mimetype='application/x-pem-file')
 
-def handle_agent_connection(agent_socket, agent_address):
-    """Maneja la conexión con el agente y espera comandos desde el servidor."""
-    global connected_agents
-    try:
-        agent_id = agent_socket.recv(4096).decode('utf-8').strip()
-        agent_id = int(agent_id)
-        print(f"Agente {agent_id} conectado desde {agent_address}")
-
-        connected_agents[agent_id] = agent_socket
-        print("Estado actual de connected_agents:", connected_agents)
-
-        while True:
-            # Verificar si hay un comando en la cola para enviar al agente
-            if not command_queue.empty():
-                command = command_queue.get()
-                print(f"Enviando comando al agente {agent_id}: {command}")
-                agent_socket.send(command.encode('utf-8'))
-                # Esperar la respuesta del agente
-                output = agent_socket.recv(4096).decode('utf-8')
-                print(f"Respuesta del agente {agent_id}: {output}")
-                # Si no hay salida, asignamos un mensaje por defecto
-                if not output:
-                    output = f"Comando {command} ejecutado con éxito (sin salida)."
-                # Poner la respuesta en la cola de resultados
-                result_queue.put((agent_id, output))
-
-    except Exception as e:
-        print(f"Error con el agente {agent_id}: {e}")
-    finally:
-        print(f"Agente {agent_id} desconectado, eliminándolo de connected_agents.")
-        connected_agents.pop(agent_id, None)
-        agent_socket.close()
-        print("Estado actual después de la desconexión:", connected_agents)
-
 @app.route('/execute_command/<int:agent_id>', methods=['GET', 'POST'])
 def execute_command(agent_id):
-    """Enviar comandos desde el servidor al agente y recibir la respuesta."""
     output = None
     if request.method == 'POST':
         command = request.form.get('command')
         print(f"Recibiendo comando para el agente {agent_id}: {command}")
-        agent_socket = connected_agents.get(agent_id)
-        if not agent_socket:
-            return jsonify({'error': 'Agente no está conectado'}), 404
-        # Poner el comando en la cola para que el servidor de sockets lo procese
-        command_queue.put(command)
-        # Esperar hasta que el servidor de sockets ponga el resultado en la cola con un timeout
-        timeout = 4  # tiempo de espera en segundos
-        start_time = time.time()
-        while result_queue.empty() and (time.time() - start_time) < timeout:
-            pass  # Esperar hasta que haya un resultado o se alcance el timeout
-        # Recuperar la salida del agente de la cola
-        if result_queue.empty():
-            output = f"Error: El agente {agent_id} no respondió a tiempo."
+        
+        # Verificar si el agente está conectado
+        if agent_id in connected_agents:
+            agent_socket = connected_agents[agent_id]
+            
+            # Si el comando es 'exit', cerramos la conexión
+            if command == 'exit':
+                agent_socket.send(command.encode())
+                agent_socket.close()
+                connected_agents.pop(agent_id, None)  # Eliminar agente de la lista
+                output = f"Conexión con el agente {agent_id} cerrada."
+            else:
+                # Enviar el comando al agente y esperar la respuesta
+                agent_socket.send(command.encode())
+                response = agent_socket.recv(4096)
+                output = response.decode()
         else:
-            # Recuperar la salida del agente de la cola
-            result_agent_id, output = result_queue.get()
-            # Asegurarse de que el resultado corresponde al agente correcto
-            if result_agent_id != agent_id:
-                output = f"Error: El resultado no pertenece al agente {agent_id}."
+            output = "Agente no conectado."
 
     return render_template('execute_commands.html', agent_id=agent_id, output=output)
 
-def start_socket_server(host='0.0.0.0', port=5001): # Función para iniciar el servidor de sockets que escuchará las conexiones de los agentes
+def start_socket_server(host='0.0.0.0', port=5001):
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server_socket.bind((host, port))
     server_socket.listen(5)
     print(f"Servidor de sockets escuchando en {host}:{port}...")
-    while True:
-        agent_socket, agent_address = server_socket.accept()
-        threading.Thread(target=handle_agent_connection, args=(agent_socket, agent_address)).start()
+    try:
+        while True:
+            client_socket, client_address = server_socket.accept()
+            print(f"Conexión desde {client_address}")
+            try: 
+            # Recibir el ID del agente al inicio de la conexión
+                agent_id = int(client_socket.recv(1024).decode('utf-8'))
+            # Registrar al agente en la lista de agentes conectados
+                connected_agents[agent_id] = client_socket
+                print(f"Agente {agent_id} conectado.")
+            except Exception as e:
+                print(f"Error al recibir datos del agente: {e}")
+    finally:
+        client_socket.close()
+        connected_agents.pop(agent_id, None)
+        print(f"Agente {agent_id} desconectado.")
+
 
 if __name__ == '__main__':
     threading.Thread(target=start_socket_server, args=('0.0.0.0', 5001), daemon=True).start()  # Iniciar el servidor de sockets en un hilo separado
