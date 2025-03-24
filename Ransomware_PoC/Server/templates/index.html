@@ -31,11 +31,11 @@
                     <td>{{ agent.mac }}</td>
                     <td>{{ agent.so }}</td>
                     <td>
-                        <a href="{{ url_for('view_private_key', agent_id=agent.id) }}" class="btn btn-red">Ver clave</a>
-                        <a href="{{ url_for('download_private_key', agent_id=agent.id) }}" class="btn btn-red">Descargar clave</a>
+                        <a href="{{ url_for('view_private_key', agent_id=agent.id) }}" class="btn btn-green">Ver clave</a>
+                        <a href="{{ url_for('download_private_key', agent_id=agent.id) }}" class="btn btn-green">Descargar clave</a>
                     </td>
                     <td>
-                        <a href="{{ url_for('execute_command', agent_id=agent.id) }}" class="btn btn-red">Ejecutar comandos</a>
+                        <a href="{{ url_for('execute_command', agent_id=agent.id) }}" class="btn btn-green">Ejecutar comandos</a>
                     </td>
                 </tr>
                 {% endfor %}

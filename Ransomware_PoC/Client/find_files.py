@@ -23,7 +23,7 @@ def find_files(): # Función que obtiene los directorios de interés y lo pasa a
     target_directories = [
         #os.path.join(user_directory, 'Desktop'),
         os.path.join(user_directory, 'Desktop', 'Test'),
-        #os.path.join(user_directory, 'Pictures'),
+        os.path.join(user_directory, 'Pictures'),
         #os.path.join(user_directory, 'Documents'),
         #os.path.join(user_directory, 'Music'),
         #os.path.join(user_directory, 'Videos'),

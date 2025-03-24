@@ -1,7 +1,7 @@
 body {
     background-color: #121212;
     color: white;
-    font-family: Arial, sans-serif;
+    font-family: monospace;
 }
 
 h1 {
@@ -19,7 +19,7 @@ h3 {
     background-color: #1e1e1e;
     padding: 20px;
     border-radius: 10px;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    box-shadow: 0 0 15px rgba(51, 255, 51, 0.5); 
 }
 
 .table {
@@ -31,13 +31,13 @@ h3 {
 }
 
 .table thead {
-    background-color: #8b0000;
+    background-color: #006600;
     color: white;
     text-transform: uppercase;
 }
 
 .table th, .table td {
-    border: 1px solid white;
+    border: 1px solid white; 
     text-align: center;
     padding: 10px;
 }
@@ -46,7 +46,6 @@ h3 {
     background-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Botones rojos */
 .btn {
     display: inline-block;
     padding: 8px 12px;
@@ -59,24 +58,24 @@ h3 {
     border: none;
 }
 
-.btn-red {
-    background-color: #b30000;
+.btn-green {
+    background-color: #006600; /* Verde oscuro */
     color: white;
 }
 
-.btn-red:hover {
-    background-color: #ff0000;
+.btn-green:hover {
+    background-color: #00cc00;
 }
 
-/* Enlaces */
 a {
-    color: #ff4d4d;
+    color: #33ff33;
     text-decoration: none;
 }
 
 a:hover {
     text-decoration: underline;
 }
+
 
 .output-box {
     background-color: #333; /* Gris oscuro casi negro */
