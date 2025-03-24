@@ -55,25 +55,21 @@ def execute_command(agent_id):
     if request.method == 'POST':
         command = request.form.get('command')
         print(f"Recibiendo comando para el agente {agent_id}: {command}")
-        
         # Verificar si el agente está conectado
         if agent_id in connected_agents:
             agent_socket = connected_agents[agent_id]
-            
             # Si el comando es 'exit', cerramos la conexión
+            agent_socket.send(command.encode())
             if command == 'exit':
-                agent_socket.send(command.encode())
                 agent_socket.close()
                 connected_agents.pop(agent_id, None)  # Eliminar agente de la lista
                 output = f"Conexión con el agente {agent_id} cerrada."
             else:
                 # Enviar el comando al agente y esperar la respuesta
-                agent_socket.send(command.encode())
                 response = agent_socket.recv(4096)
                 output = response.decode()
         else:
             output = "Agente no conectado."
-
     return render_template('execute_commands.html', agent_id=agent_id, output=output)
 
 def start_socket_server(host='0.0.0.0', port=5001):
@@ -81,24 +77,18 @@ def start_socket_server(host='0.0.0.0', port=5001):
     server_socket.bind((host, port))
     server_socket.listen(5)
     print(f"Servidor de sockets escuchando en {host}:{port}...")
-    try:
-        while True:
-            client_socket, client_address = server_socket.accept()
-            print(f"Conexión desde {client_address}")
-            try: 
-            # Recibir el ID del agente al inicio de la conexión
-                agent_id = int(client_socket.recv(1024).decode('utf-8'))
-            # Registrar al agente en la lista de agentes conectados
-                connected_agents[agent_id] = client_socket
-                print(f"Agente {agent_id} conectado.")
-            except Exception as e:
-                print(f"Error al recibir datos del agente: {e}")
-    finally:
-        client_socket.close()
-        connected_agents.pop(agent_id, None)
-        print(f"Agente {agent_id} desconectado.")
-
-
+    while True:
+        client_socket, client_address = server_socket.accept()
+        print(f"Conexión desde {client_address}")
+        try: 
+        # Recibir el ID del agente al inicio de la conexión
+            agent_id = int(client_socket.recv(1024).decode('utf-8'))
+        # Registrar al agente en la lista de agentes conectados
+            connected_agents[agent_id] = client_socket
+            print(f"Agente {agent_id} conectado.")
+        except Exception as e:
+            print(f"Error al recibir datos del agente: {e}")
+  
 if __name__ == '__main__':
     threading.Thread(target=start_socket_server, args=('0.0.0.0', 5001), daemon=True).start()  # Iniciar el servidor de sockets en un hilo separado
     app.run(debug=True, host="0.0.0.0", port=5000, use_reloader=False)# Iniciar el servidor Flask

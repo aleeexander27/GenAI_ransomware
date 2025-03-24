@@ -1,7 +1,6 @@
 import os
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
-from Crypto.Util.Padding import unpad
 from find_files import find_files
 import agent
 
@@ -23,8 +22,8 @@ def decrypt_file(file, aes_key_decrypted):
     try:
         with open(file, "rb") as f:
             nonce_and_encrypted_data = f.read()
-        nonce = nonce_and_encrypted_data[:8]  # El nonce ocupa los primeros 8 bytes
-        encrypted_data = nonce_and_encrypted_data[8:]
+        nonce = nonce_and_encrypted_data[:12]  # El nonce ocupa los primeros 12 bytes
+        encrypted_data = nonce_and_encrypted_data[12:]
         cipher = AES.new(aes_key_decrypted, AES.MODE_CTR, nonce=nonce)
         decrypted_data = cipher.decrypt(encrypted_data)
         with open(file, "wb") as f:

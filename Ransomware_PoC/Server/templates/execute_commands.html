@@ -27,12 +27,13 @@
         </div>
         {% endif %}
         <form method="POST" action="{{ url_for('execute_command', agent_id=agent_id) }}">
+            <h3>Introduce un comando y presiona enter:</h3>
             <div class="form-group">
-                <input type="text" name="command" placeholder="Escribe el comando" class="form-control" style="font-size: 18px;" required>
-            </div><br></br>
+                <input type="text" name="command" placeholder="Escribe el comando" class="form-control custom-input" required>
+            </div>
         </form><br></br>
         {% if output %}
-        <h3>Resultado:</h3>
+        <h3>Resultado de la ejecución:</h3>
         <div class="output-box">
             <pre>{{ output }}</pre>
         </div>

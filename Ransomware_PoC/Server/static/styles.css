@@ -76,20 +76,38 @@ a:hover {
     text-decoration: underline;
 }
 
+.custom-input {
+    font-size: 14px; 
+    background-color: #333; 
+    text-align: left; 
+    padding: 15px; 
+    border-radius: 5px; 
+    border: 1px solid #222; 
+    width: 80%;
+    max-width: 100%; 
+    box-sizing: border-box; 
+    color: #fff; 
+    margin-top: 10px; 
+    margin-left: auto; 
+    margin-right: auto; 
+}
 
+.custom-input:hover {
+    background-color: #444; 
+}
 .output-box {
-    background-color: #333; /* Gris oscuro casi negro */
-    border: 1px solid #222; /* Borde más oscuro */
+    background-color: #333; 
+    border: 1px solid #222; 
     padding: 20px;
     margin-top: 20px;
-    width: 80%; /* Ajusta el ancho del box */
-    max-width: 100%; /* Evita que se desborde */
+    width: 80%; 
+    max-width: 100%; 
     margin-left: auto;
     margin-right: auto;
     border-radius: 5px;
-    white-space: pre-wrap; /* Mantiene los saltos de línea */
-    word-wrap: break-word; /* Evita desbordes de palabras largas */
-    overflow: auto; /* Agrega scroll si el contenido excede el tamaño */
-    color: #fff; /* Texto en blanco para contraste */
+    white-space: pre-wrap;
+    word-wrap: break-word; 
+    overflow: auto; 
+    color: #fff; 
 }
 

