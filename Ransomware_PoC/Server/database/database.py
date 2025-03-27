@@ -12,7 +12,8 @@ def init_db():
             ip TEXT NOT NULL,
             mac TEXT NOT NULL,
             so TEXT NOT NULL,
-            private_key TEXT NOT NULL
+            private_key TEXT NOT NULL,
+            pay_status BOOLEAN NOT NULL DEFAULT FALSE
         )
     ''')
     conn.commit()
