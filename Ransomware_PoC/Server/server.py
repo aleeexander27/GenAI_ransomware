@@ -124,5 +124,9 @@ def start_socket_server(host='0.0.0.0', port=5001):
             print(f"Error al recibir datos del agente: {e}")
   
 if __name__ == '__main__':
-    threading.Thread(target=start_socket_server, args=('0.0.0.0', 5001), daemon=True).start()  # Iniciar el servidor de sockets en un hilo separado
-    app.run(debug=True, host="0.0.0.0", port=5000, use_reloader=False)# Iniciar el servidor Flask
+    # Iniciar el servidor de sockets en un hilo separado
+    threading.Thread(target=start_socket_server, args=('0.0.0.0', 5001), daemon=True).start()  
+    # Iniciar el servidor Flask
+    app.run(debug=True, host="0.0.0.0", port=5000, use_reloader=False)
+
+    
