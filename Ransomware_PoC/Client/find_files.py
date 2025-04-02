@@ -30,10 +30,10 @@ def find_files():
     target_directories = [
         os.path.join(user_directory, 'Desktop'), # Directorio de escritorio
        # os.path.join(user_directory, 'Pictures'), # Directorio de imágenes
-       # os.path.join(user_directory, 'Documents'), # Directorio de documentos
-       # os.path.join(user_directory, 'Music'), # Directorio de música
-       # os.path.join(user_directory, 'Videos'), # Directorio de vídeos
-       # os.path.join(user_directory, 'Downloads') # Directorio de descargas
+        #os.path.join(user_directory, 'Documents'), # Directorio de documentos
+        #os.path.join(user_directory, 'Music'), # Directorio de música
+        #os.path.join(user_directory, 'Videos'), # Directorio de vídeos
+        #os.path.join(user_directory, 'Downloads') # Directorio de descargas
     ]
     # Llama a la función walk_directories con los directorios objetivo
     files = walk_directories(target_directories)
