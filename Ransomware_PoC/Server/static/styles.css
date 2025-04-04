@@ -95,6 +95,7 @@ a:hover {
 .custom-input:hover {
     background-color: #444; 
 }
+
 .output-box {
     background-color: #333; 
     border: 1px solid #222; 
@@ -111,3 +112,37 @@ a:hover {
     color: #fff; 
 }
 
+.logout-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;  
+}
+
+.logout-btn {
+    background-color: #333;
+    border: 2px solid #00ff00; 
+    padding: 6px 10px;
+    border-radius: 5px;  
+    color: #00ff00;  
+    font-size: 16px; 
+    text-transform: uppercase;
+    font-family: monospace; 
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+    background-color: #222; 
+    color: #ff0000; 
+    border-color: #ff0000; 
+    transform: scale(1.05); 
+}
+
+.logout-icon {
+    font-size: 18px; 
+    margin-right: 6px; 
+}

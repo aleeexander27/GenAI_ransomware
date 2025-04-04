@@ -5,11 +5,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <title>Servidor C2</title>
 </head>
 
 <body>
+    <!-- Botón de logout disimulado -->
+    <div class="logout-container">
+        <a href="{{ url_for('logout') }}" class="logout-btn" title="Cerrar sesión">
+            <i class="fas fa-sign-out-alt logout-icon"></i>  <!-- Icono de logout -->
+        </a>
+    </div>
     <div class="container-fluid mt-5">
         <h1>Servidor de Comando y Control</h1>
         <table class="table table-bordered">
@@ -35,7 +42,7 @@
                     <td>{{ agent.timestamp }}</td>
                     <td> 
                         {% if agent.pay_status %}
-                        ✅ Pagado
+                         Pagado
                         {% else %} 
                         <a href="{{ url_for('pay_agent', agent_id=agent.id) }}" class="btn btn-green"> Marcar como pagado</a>
                         {% endif %}
