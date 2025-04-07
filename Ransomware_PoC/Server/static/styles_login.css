@@ -1,6 +1,5 @@
-/* Estilos para el fondo de la página */
 body {
-    background-image: url("login_background/background.jpg"); /* Ruta relativa desde static/css */
+    background-image: url("login_background/background.jpg");
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -12,25 +11,22 @@ body {
     color: white;
 }
 
-/* Contenedor del formulario de login */
 .login-container {
-    background: rgba(30, 30, 30, 0.95); /* Fondo oscuro semi-transparente */
-    padding: 40px;  /* Aumenta el padding para más espacio interno */
+    background: rgba(30, 30, 30, 0.95); 
+    padding: 40px;  
     border-radius: 10px;
     box-shadow: 0px 0px 10px rgba(0, 255, 0, 0.3);
     text-align: center;
-    width: 400px;  /* Aumenta el ancho */
-    max-width: 100%; /* Asegura que no se desborde en pantallas más pequeñas */
+    width: 400px;  
+    max-width: 100%; 
 }
 
-/* Alinear las etiquetas y los inputs a la izquierda */
 label {
-    display: block;  /* Asegura que las etiquetas estén en una línea separada */
-    text-align: left;  /* Alinea el texto de las etiquetas a la izquierda */
-    margin-bottom: 5px;  /* Espacio entre la etiqueta y el input */
+    display: block;  
+    text-align: left;  
+    margin-bottom: 5px;  
 }
 
-/* Estilos para inputs */
 input {
     display: block;
     width: 100%;
@@ -47,7 +43,6 @@ input:focus {
     outline: none;
 }
 
-/* Estilos para el botón */
 button {
     background: #006600;
     color: white;
@@ -62,7 +57,6 @@ button:hover {
     background: #00cc00;
 }
 
-/* Mensajes de error */
 .error-message {
     color: red;
     font-size: 14px;

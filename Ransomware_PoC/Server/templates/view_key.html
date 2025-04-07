@@ -5,9 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Clave Privada</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+          body, html {
+      
+            margin: 0;
+            display: flex;
+            justify-content: center; 
+        }
+        .container {
+            display: inline-block; /* Cambié inline-block por flex */
+            justify-content: center; /* Centra horizontalmente */
+            align-items: center; /* Centra verticalmente */
+            margin-top: 20px; /* Mantiene el margen superior que tenías */
+        }
+    </style>
 </head>
 <body>
-    <div class="container" style="display: inline-block; margin-top: 20px; margin-left: 20px;">
+    <div class="container">
     <pre>{{ private_key }}</pre>
     </div>
 </body>

