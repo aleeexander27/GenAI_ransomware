@@ -1,11 +1,13 @@
 import sqlite3
 import os
 
-DB_PATH = os.path.join(os.path.dirname(__file__), 'agents.db')
+DB_PATH = os.path.join(os.path.dirname(__file__), 'server.db')
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
+
+    # Crear tabla de agentes
     c.execute('''
         CREATE TABLE IF NOT EXISTS agents (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -18,7 +20,7 @@ def init_db():
         )
     ''')
 
-    # Crear tabla de usuarios si no existe
+    # Crear tabla de usuarios
     c.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -27,7 +29,7 @@ def init_db():
         )
     ''')
 
-    # Insertar un usuario por defecto si la tabla está vacía
+    # Insertar un usuario por defecto 
     c.execute("SELECT COUNT(*) FROM users")
     if c.fetchone()[0] == 0:
         c.execute("INSERT INTO users (username, password) VALUES ('hacker', 'hacker123')")

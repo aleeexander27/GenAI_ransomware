@@ -99,10 +99,8 @@ def view_private_key(agent_id):
     c.execute('SELECT private_key FROM agents WHERE id = ?', (agent_id,))
     agent = c.fetchone()
     conn.close()
-
     if not agent:
         return jsonify({'error': 'Agente no encontrado'}), 404
-    
     return render_template('view_key.html', private_key=agent[0])
 
 @app.route('/download_private_key/<int:agent_id>', methods=['GET'])  # Descargar la clave privada
