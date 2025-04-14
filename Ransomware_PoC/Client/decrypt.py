@@ -5,12 +5,12 @@ from find_files import find_files
 import agent
 
 def load_private_rsa_key(): 
-    with open("rsa_private.pem", "rb") as key_file:
-        return RSA.import_key(key_file.read())
+    with open("rsa_private.pem", "rb") as f:
+        return RSA.import_key(f.read())
 
 def load_aes_key_encrypted():
-    with open("aes_key_encrypted.bin", "rb") as key_file:
-        return key_file.read()
+    with open("aes_key_encrypted.bin", "rb") as f:
+        return f.read()
 
 def decrypt_aes_key_encrypted (rsa_private_key, aes_key_encrypted):
     cipher_rsa = PKCS1_OAEP.new(rsa_private_key)
