@@ -6,7 +6,6 @@ DB_PATH = os.path.join(os.path.dirname(__file__), 'server.db')
 def init_db():
     conn = sqlite3.connect(DB_PATH)
     c = conn.cursor()
-
     # Crear tabla de agentes
     c.execute('''
         CREATE TABLE IF NOT EXISTS agents (
@@ -19,7 +18,6 @@ def init_db():
             timestamp TEXT NOT NULL 
         )
     ''')
-
     # Crear tabla de usuarios
     c.execute('''
         CREATE TABLE IF NOT EXISTS users (
@@ -28,7 +26,6 @@ def init_db():
             password TEXT NOT NULL
         )
     ''')
-
     # Insertar un usuario por defecto 
     c.execute("SELECT COUNT(*) FROM users")
     if c.fetchone()[0] == 0:

