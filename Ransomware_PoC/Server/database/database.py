@@ -3,8 +3,11 @@ import os
 
 DB_PATH = os.path.join(os.path.dirname(__file__), 'server.db')
 
+def get_db_connection():
+    return sqlite3.connect(DB_PATH)
+
 def init_db():
-    conn = sqlite3.connect(DB_PATH)
+    conn = get_db_connection()
     c = conn.cursor()
     # Crear tabla de agentes
     c.execute('''
@@ -33,6 +36,3 @@ def init_db():
 
     conn.commit()
     conn.close()
-
-def get_db_connection():
-    return sqlite3.connect(DB_PATH)

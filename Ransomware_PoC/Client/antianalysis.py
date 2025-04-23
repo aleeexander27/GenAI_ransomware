@@ -107,6 +107,7 @@ def check_virtualization():
         or check_hypervisor_files()
         or check_system_requirements()
     ):
+        print("Virtualización detectada")
         sys.exit(0)
     
 if __name__ == "__main__":

