@@ -18,7 +18,7 @@ body {
     box-shadow: 0px 0px 10px rgba(0, 255, 0, 0.3);
     text-align: center;
     width: 400px;  
-    max-width: 100%; 
+    max-width: 100%;
 }
 
 label {
@@ -26,6 +26,10 @@ label {
     text-align: left;  
     margin-bottom: 5px;  
 }
+* {
+    box-sizing: border-box;
+}
+
 
 input {
     display: block;
@@ -51,6 +55,7 @@ button {
     width: 100%;
     cursor: pointer;
     border-radius: 5px;
+  
 }
 
 button:hover {

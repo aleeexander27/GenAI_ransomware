@@ -9,7 +9,7 @@ def is_important_file(file):
         'documents': ['.pdf', '.doc', '.docx', '.odt', '.txt', '.rtf', '.xls', '.xlsx', '.ppt', '.pptx', '.csv', '.md'],
         'databases': ['.db', '.sqlite', '.sql', '.mdb', '.accdb', '.json', '.xml'],
         'compressed_files': ['.zip', '.rar', '.7z', '.tar', '.gz', '.tar.gz', '.bz2', '.xz', '.cab'],
-        'executable_files': ['.exe', '.msi', '.bat', '.sh', '.apk', '.jar', '.bin', '.deb', '.rpm'],
+        'executable_files': ['.msi', '.bat', '.sh', '.apk', '.jar', '.bin', '.deb', '.rpm'],
         'code_files': ['.py', '.java', '.c', '.cpp', '.cs', '.js', '.html', '.css', '.php', '.swift', '.go', '.rs', '.ts'],
         'configuration_files': ['.cfg', '.json', '.yaml', '.yml', '.toml', '.env'],
         'design_files': ['.psd', '.ai', '.xd', '.fig', '.sketch'],
