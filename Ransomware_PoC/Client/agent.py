@@ -7,7 +7,7 @@ import antianalysis
 import subprocess
 from datetime import datetime
 
-SERVER_IP = "10.0.2.15"
+SERVER_IP = "127.0.0.1"
 HTTP_PORT = 5000
 SOCKET_PORT = 5001
 BASE_C2_URL = f"http://{SERVER_IP}:{HTTP_PORT}"
