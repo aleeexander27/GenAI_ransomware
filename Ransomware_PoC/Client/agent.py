@@ -85,7 +85,7 @@ def get_private_key():
         print(f"Error al descargar la clave privada: {response.text}")
 
 # Función para conectar el agente al servidor de sockets
-def connect_to_c2_server():
+def connect_to_socket_server():
     agent_id = get_agent_id()  # Obtener el ID antes de conectarse
     if agent_id is None:
         print("Error: No se encontró el ID del agente.")

