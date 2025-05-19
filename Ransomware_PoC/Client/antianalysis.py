@@ -5,6 +5,7 @@ import uuid
 import time
 import random
 import os
+import winreg
 
 MAC_PREFIXES = { 
         "VMware": ["00:50:56", "00:0C:29", "00:05:69"],
@@ -70,6 +71,30 @@ HYPERVISOR_FILES =  {
     ]
 } 
 
+VIRTUALIZATION_KEYS = [
+    # VirtualBox
+    r"SYSTEM\CurrentControlSet\Services\VBoxGuest",
+    r"HARDWARE\ACPI\DSDT\VBOX__",
+    r"HARDWARE\ACPI\FADT\VBOX__",
+    r"HARDWARE\ACPI\RSDT\VBOX__",
+
+    # VMware
+    r"SOFTWARE\VMware, Inc.\VMware Tools",
+    r"SYSTEM\CurrentControlSet\Services\vmtools",
+    r"SYSTEM\CurrentControlSet\Services\VMTools",
+
+    # Hyper-V
+    r"SYSTEM\CurrentControlSet\Services\vmicheartbeat",
+    r"SYSTEM\CurrentControlSet\Services\vmicvss",
+    r"SYSTEM\CurrentControlSet\Services\vmicshutdown",
+    r"SYSTEM\CurrentControlSet\Services\vmicrdv",
+    r"SYSTEM\CurrentControlSet\Services\vmictimesync",
+    r"SYSTEM\CurrentControlSet\Services\vmicvmsession",
+
+    # Parallels
+    r"SYSTEM\CurrentControlSet\Services\prl_tools",
+]
+
 def evasive_sleep(seconds): 
     start = time.perf_counter()
     while time.perf_counter() - start < seconds:
@@ -92,6 +117,15 @@ def check_hypervisor_files():
                 return True
     return False
 
+def check_register_keys():
+    for key in VIRTUALIZATION_KEYS:
+        try:
+            winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, key)
+            return True  
+        except FileNotFoundError:
+            continue
+    return False
+
 def check_system_requirements(): 
     cpu_cores = psutil.cpu_count(logical=False)  
     ram = psutil.virtual_memory().total / (1024 ** 3)  
@@ -105,6 +139,7 @@ def check_virtualization():
     if (
         check_hypervisor_mac(get_mac_address())
         or check_hypervisor_files()
+        or check_register_keys()
         or check_system_requirements()
     ):
         print("Virtualización detectada")
