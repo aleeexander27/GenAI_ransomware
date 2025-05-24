@@ -1,7 +1,6 @@
 import os
 
 def is_important_file(file):
-    # Diccionario con categorías de archivos y sus extensiones correspondientes
     extensions = { 
         'images': ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.webp', '.svg', '.ico', '.heif', '.heic'],
         'videos': ['.mp4', '.avi', '.mov', '.mkv', '.webm', '.flv', '.wmv', '.3gp', '.mpeg', '.mpg'],
@@ -28,12 +27,12 @@ def find_files():
     user_directory = os.environ.get('USERPROFILE', None)
     # Lista de directorios objetivo para buscar los archivos
     target_directories = [
-        #os.path.join(user_directory, 'Desktop'), # Directorio de escritorio
+        os.path.join(user_directory, 'Desktop'), # Directorio de escritorio
         os.path.join(user_directory, 'Pictures'), # Directorio de imágenes
-        #os.path.join(user_directory, 'Documents'), # Directorio de documentos
-        #os.path.join(user_directory, 'Music'), # Directorio de música
-        #os.path.join(user_directory, 'Videos'), # Directorio de vídeos
-        #os.path.join(user_directory, 'Downloads') # Directorio de descargas
+        os.path.join(user_directory, 'Documents'), # Directorio de documentos
+        os.path.join(user_directory, 'Music'), # Directorio de música
+        os.path.join(user_directory, 'Videos'), # Directorio de vídeos
+        os.path.join(user_directory, 'Downloads') # Directorio de descargas
     ]
     # Llama a la función walk_directories con los directorios objetivo
     files = walk_directories(target_directories)

